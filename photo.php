@@ -106,7 +106,9 @@
                     <h4>Leave a Comment:</h4>
                     <form role="form">
                         <div class="form-group">
-                            <textarea class="form-control" rows="3"></textarea>
+                            <label>
+                                <textarea class="form-control" rows="3"></textarea>
+                            </label>
                         </div>
                         <button type="submit" class="btn btn-primary">Submit</button>
                     </form>
@@ -164,7 +166,9 @@
                 <div class="well">
                     <h4>Blog Search</h4>
                     <div class="input-group">
-                        <input type="text" class="form-control">
+                        <label>
+                            <input type="text" class="form-control">
+                        </label>
                         <span class="input-group-btn">
                             <button class="btn btn-default" type="button">
                                 <span class="glyphicon glyphicon-search"></span>

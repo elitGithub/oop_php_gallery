@@ -2,3 +2,4 @@ config.inc.php
 Person.Class.php
 Cars.php
 .idea/
+phpinfo.php
