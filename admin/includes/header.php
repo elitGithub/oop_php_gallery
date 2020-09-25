@@ -1,10 +1,9 @@
 <?php
 
-use Gallery\Database;
+use Gallery\User;
 
 ob_start();
 require_once 'init.php';
-$db = new Database();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -22,6 +21,7 @@ $db = new Database();
     <link href="css/sb-admin.css" rel="stylesheet">
     <!-- Custom Fonts -->
     <link href="font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+    <link rel="stylesheet" href="css/style.css">
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
     <!--[if lt IE 9]>

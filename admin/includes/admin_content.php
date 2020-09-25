@@ -1,6 +1,5 @@
-<?php include("includes/header.php"); ?>
-
-    <!-- Navigation -->
+<?php include("includes/header.php");?>
+ <!-- Navigation -->
 
     <div id="page-wrapper">
         <div id="page_content" class="container-fluid">
@@ -12,4 +11,4 @@
         <!-- /.container-fluid -->
     </div>
     <!-- /#page-wrapper -->
-<?php include("includes/footer.php"); ?>
+<?php include("includes/footer.php");?>

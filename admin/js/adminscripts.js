@@ -10,7 +10,9 @@ const routes = [
     'uploads.php',
     'comments.php',
 ];
+const usersEditForm = document.getElementById('userEditForm');
 let activeRoute = window.location.pathname;
+
 document.addEventListener('DOMContentLoaded', () => {
     topNavItems.innerHTML = `<li class="dropdown">
         <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-envelope"></i> <b class="caret"></b></a>
@@ -187,8 +189,7 @@ function innerHtml(requestedFile) {
     switch (requestedFile) {
         case 'index.php':
             document.title = 'Content Management Admin';
-            return `<div class="row">
-                    <div class="col-lg-12">
+            return `<div class="col-lg-12">
                         <h1 class="page-header">
                             Index Page!
                             <small>This is sum shiet</small>
@@ -201,26 +202,13 @@ function innerHtml(requestedFile) {
                                 <i class="fa fa-file"></i> Blank Page
                             </li>
                         </ol>
-                    </div>
-                </div>`;
+                    </div>`;
         case 'users.php':
             document.title = 'User Management';
-            return `<div class="row">
-                    <div class="col-lg-12">
-                        <h1 class="page-header">
-                            Users Page!
-                            <small>This is sum shiet</small>
-                        </h1>
-                        <ol class="breadcrumb">
-                            <li>
-                                <i class="fa fa-dashboard"></i>  <a href="users.php">Users</a>
-                            </li>
-                            <li class="active">
-                                <i class="fa fa-file"></i> Blank Page
-                            </li>
-                        </ol>
-                    </div>
-                </div>`;
+            fetchAllUsers().then(usersList => usersList.json().then(users => {
+                return printTableWithData(users);
+            }));
+            break;
         case 'uploads.php':
             document.title = 'Uploads';
             return `<div class="row">
@@ -299,8 +287,106 @@ function innerHtml(requestedFile) {
 function getPageContent(options = {}) {
     let deconstructedUrl = options.activeRoute.split('/');
     let requestedFile = deconstructedUrl[deconstructedUrl.length - 1];
-    if (requestedFile === '') requestedFile = 'index.php';
-    if (routes.indexOf(route => route === requestedFile)) {
+    requestedFile === '' ? requestedFile = 'index.php' : requestedFile;
+    if (routes.find(route => route === requestedFile)) {
         return innerHtml(requestedFile);
     }
+}
+
+function fetchAllUsers() {
+    return fetch('api/fetchusers.php?find_all');
+}
+
+function printTableWithData(data) {
+    let table = `<div class="row">
+    <div class="col-lg-12">
+        <h1 class="page-header">
+            User Management
+            <small>Manage Users</small>
+        </h1>
+    <table class="table table-striped">
+    <tr>
+    <th>ID</th>
+    <th>Username</th>
+    <th>First Name</th>
+    <th>Last Name</th>
+    <th>Actions</th>
+    </tr>
+    `;
+    for (const dataItem of data) {
+        table += `<tr>
+                <td>${dataItem.id}</td>
+                <td>${dataItem.username}</td>
+                <td>${dataItem.first_name}</td>
+                <td>${dataItem.last_name}</td>
+                <td>
+                <a href="#"><i class="fa fa-pencil" id="${dataItem.id}"></i></a>
+                </td>
+                </tr>`;
+    }
+    table += '</table>';
+    pageContent.innerHTML = table;
+    const editButtons = document.querySelectorAll('.fa-pencil');
+    editButtons.forEach(button => button.addEventListener('click', e => {
+        manageSingleUser(e.target.id);
+    }));
+}
+
+async function updateUser(options = {}) {
+    let response = await fetch( 'api/updateusers.php',{
+        method: 'POST',
+        body: JSON.stringify(options),
+        mode: 'cors',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        }
+    });
+    console.log(response);
+}
+
+function manageSingleUser(userId) {
+    let url = `api/fetchusers.php?find_one&id=${userId}`;
+        fetch(url).then(response => response.json()).then(res => {
+            document.getElementById('theModalContent').innerHTML = `
+<span id="closeUserEdit" class="close">x</span>
+<form class="form-align-center" id="editUser">
+            <div class="edit-user-header">
+                Editing User: ${res.username}
+            </div>
+            <div class="form-group">
+                <label for="first_name">First Name</label>
+                <input type="text" class="form-control" name="first_name" id="first_name" value="${res.first_name}">
+            </div>
+            <div class="form-group">
+                <label for="last_name">Last Name</label>
+                <input type="text" class="form-control" name="last_name" id="last_name" value="${res.last_name}">
+            </div>
+            <div class="form-group">
+                <label for="password">New Password</label>
+                <input type="password" class="form-control" name="password" id="password" value="${res.password}">
+            </div>
+            <div class="form-group">
+                <label for="exampleInputFile">User Image</label>
+                <input type="file" id="userimage" name="userimage">
+            </div>
+            <div class="form-buttons">
+                <button value="update_user" data-id="${res.id}" id="update_user" name="update_user" class="btn btn-success">Submit</button>
+                <button id="cancelUserEdit" class="btn btn-danger">Cancel</button>
+            </div>
+        </form>`;
+            const submitBtn = document.getElementById('update_user');
+            document.getElementById('closeUserEdit').addEventListener('click', () => usersEditForm.style.display = 'none');
+            document.getElementById('cancelUserEdit').addEventListener('click', () => usersEditForm.style.display = 'none');
+            usersEditForm.style.display = 'block';
+            let form = document.querySelector('#editUser');
+            submitBtn.addEventListener('click', e => {
+                e.preventDefault();
+                updateUser({
+                    submit_user: 'submit_user',
+                    form_data: new FormData(form),
+                    user_id: submitBtn.dataset.id
+                });
+            });
+    });
 }

@@ -1,15 +1,7 @@
-<?php include("includes/header.php"); ?>
+<?php require_once 'includes/admin_content.php';?>
 
-    <!-- Navigation -->
+<div id="userEditForm" class="userEditForm">
+    <div class="theModalContent container" id="theModalContent">
 
-    <div id="page-wrapper">
-        <div id="page_content" class="container-fluid">
-
-            <!-- Page Heading -->
-
-            <!-- /.row -->
-        </div>
-        <!-- /.container-fluid -->
     </div>
-    <!-- /#page-wrapper -->
-<?php include("includes/footer.php"); ?>
+</div>
