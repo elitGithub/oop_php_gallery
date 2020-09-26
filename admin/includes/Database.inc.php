@@ -3,7 +3,6 @@
 
 namespace Gallery;
 
-use Cassandra\Column;
 use PDO;
 
 require_once 'config.inc.php';
@@ -11,14 +10,23 @@ require_once 'config.inc.php';
 class Database
 {
     /**
-     * @var
+     * @var PDO
      */
-    protected $db;
+    protected PDO $db;
     protected $stmt;
-    protected $table;
-    protected $idField = 'id';
-    protected $createdAt = 'created_at';
-    protected $updatedAt = 'updated_at';
+    /**
+     * @var string
+     */
+    protected string $table;
+    /**
+     * @var string
+     */
+    protected string $idField = 'id';
+    /**
+     * @var string
+     */
+    protected string $createdAtColumn = 'created_at';
+    protected string $updatedAtColumn = 'updated_at';
 
     /**
      * Database constructor.
@@ -93,6 +101,7 @@ class Database
     }
 
     public function singleResult() {
+        $this->execute();
         return $this->stmt->fetch(PDO::FETCH_ASSOC);
     }
 
@@ -104,37 +113,33 @@ class Database
         $query = "SELECT * FROM `{$this->table}` WHERE `{$this->idField}` = :id;";
         $this->query($query);
         $this->bind(':id', $id);
-        $this->execute();
         return $this->singleResult();
     }
 
     /**
      * @param $id
      * @param array $fields
-     * @return mixed
      */
     public function updateOne($id, $fields = []) {
         foreach ($fields as $fieldName => $fieldValue) {
-            $query = "UPDATE `{$this->table}` SET `{$fieldName}` = :{$fieldName} WHERE {$this->idField} = :id;";
+            $query = "UPDATE `{$this->table}` SET `{$fieldName}` = :{$fieldName} WHERE `{$this->idField}` = {$id};";
             $this->query($query);
-            $this->executeMany([
-                ':id' => $id,
-                ":{$fieldName}" => $fieldValue,
-            ]);
+            $this->bind(":{$fieldName}", $fieldValue);
+            $this->execute();
         }
-        return $this->stmt->affectedRows();
     }
+
+    public function countAffectedRows() {
+        return $this->stmt->rowCount();
+    }
+
 
     /**
      * @param array $data
      */
-    public function executeMany(array $data) {
-        $this->stmt->execute($data);
-    }
-
     public function insert(array $data) {
         $columns = array_keys($data);
-        $bindAbles = Database::createBindAbles($columns);
+        $bindAbles = static::createBindAbles($columns);
         $query = "INSERT INTO {$this->table} (".implode(', ', $columns).") VALUES ({$bindAbles})";
         $this->query($query);
         foreach ($data as $columnName => $columnValue) {
@@ -144,30 +149,45 @@ class Database
     }
 
 
+    /**
+     * @return mixed
+     */
     public function getSchemaColumns()
     {
-        $query = "SELECT * FROM {$this->table} LIMIT 0";
+        $query = "SELECT * FROM `{$this->table}` LIMIT 0";
         $this->query($query);
         $this->execute();
         for($i = 0; $i < $this->stmt->columnCount(); $i++) {
             $colData = $this->stmt->getColumnMeta($i);
-            if (!in_array('primary_key', $colData['flags']) && $colData['native_type' ] !== 'DATE') {
-                $columns[] = $colData['name'];
-            }
+            $columns[] = $colData['name'];
         }
-        return $columns;
+        return $columns ?? [];
     }
 
+    /**
+     * @param array $columnNames
+     * @return string
+     */
     public static function createBindAbles(array $columnNames)
     {
-        $bindAbles = [];
+        $bindableAttr = [];
         foreach ($columnNames as $name) {
-            $bindAbles[] = ":{$name}";
+            $bindableAttr[] = ":{$name}";
         }
-        return implode(', ', $bindAbles);
+        return implode(', ', $bindableAttr);
     }
 
+    /**
+     * @return mixed
+     */
     public function retrieveError() {
         return $this->stmt->errorInfo();
+    }
+
+    public function deleteOne($id) {
+        $query = "DELETE FROM `{$this->table}` WHERE `{$this->idField}` = :id;";
+        $this->query($query);
+        $this->bind(":{$this->idField}", $id);
+        $this->execute();
     }
 }

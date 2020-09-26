@@ -1,6 +1,9 @@
 const sideBarNav = document.getElementById('sidebar_nav');
 const topNavItems = document.getElementById('top_nav_items');
 const pageContent = document.getElementById('page_content');
+const modalContent = document.getElementById('theModalContent');
+const messageModal = document.getElementById('editUserResultMessage');
+const resultModalContent = document.getElementById('messageContent');
 const messages = getUserMessages();
 const alerts = getUserAlerts();
 const sideBarItems = getSideBarItems();
@@ -206,7 +209,7 @@ function innerHtml(requestedFile) {
         case 'users.php':
             document.title = 'User Management';
             fetchAllUsers().then(usersList => usersList.json().then(users => {
-                return printTableWithData(users);
+                return printUsersTableWithData(users);
             }));
             break;
         case 'uploads.php':
@@ -293,23 +296,24 @@ function getPageContent(options = {}) {
     }
 }
 
-function fetchAllUsers() {
-    return fetch('api/fetchusers.php?find_all');
+async function fetchAllUsers() {
+    return await fetch('api/users/fetchusers.php?find_all');
 }
 
-function printTableWithData(data) {
+function printUsersTableWithData(data) {
     let table = `<div class="row">
     <div class="col-lg-12">
         <h1 class="page-header">
             User Management
             <small>Manage Users</small>
         </h1>
-    <table class="table table-striped">
+    <table class="table table-striped table-bordered">
     <tr>
     <th>ID</th>
     <th>Username</th>
     <th>First Name</th>
     <th>Last Name</th>
+    <th>Email</th>
     <th>Actions</th>
     </tr>
     `;
@@ -317,76 +321,117 @@ function printTableWithData(data) {
         table += `<tr>
                 <td>${dataItem.id}</td>
                 <td>${dataItem.username}</td>
-                <td>${dataItem.first_name}</td>
-                <td>${dataItem.last_name}</td>
+                <td>${dataItem.firstName}</td>
+                <td>${dataItem.lastName}</td>
+                <td>${dataItem.email}</td>
                 <td>
                 <a href="#"><i class="fa fa-pencil" id="${dataItem.id}"></i></a>
+                <a href="#"><i class="fa fa-trash" id="${dataItem.id}"></i></a>
                 </td>
                 </tr>`;
     }
-    table += '</table>';
+    table += '</table></div>';
     pageContent.innerHTML = table;
     const editButtons = document.querySelectorAll('.fa-pencil');
+    const deleteButtons = document.querySelectorAll('.fa-trash');
     editButtons.forEach(button => button.addEventListener('click', e => {
         manageSingleUser(e.target.id);
     }));
+
+    deleteButtons.forEach(button => button.addEventListener('click', e => {
+        console.log(e.target.id);
+    }));
+
 }
 
 async function updateUser(options = {}) {
-    let response = await fetch( 'api/updateusers.php',{
-        method: 'POST',
+    let url = 'api/users/updateusers.php';
+    const headers = new Headers();
+    headers.append('Content-Type', 'application/json');
+    let request = {
+        method: "POST",
         body: JSON.stringify(options),
-        mode: 'cors',
-        headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-        }
-    });
-    console.log(response);
+        datatype: 'json',
+        credentials: 'include',
+        headers: headers
+    };
+    return await fetch( url, request);
 }
 
 function manageSingleUser(userId) {
-    let url = `api/fetchusers.php?find_one&id=${userId}`;
+    let url = `api/users/fetchusers.php?find_one&id=${userId}`;
         fetch(url).then(response => response.json()).then(res => {
-            document.getElementById('theModalContent').innerHTML = `
-<span id="closeUserEdit" class="close">x</span>
-<form class="form-align-center" id="editUser">
+            modalContent.innerHTML = `<span id="closeUserEdit" class="close">x</span>
+        <form class="form-align-center" id="editUser">
             <div class="edit-user-header">
                 Editing User: ${res.username}
             </div>
             <div class="form-group">
-                <label for="first_name">First Name</label>
-                <input type="text" class="form-control" name="first_name" id="first_name" value="${res.first_name}">
+                <label for="firstName">First Name</label>
+                <input type="text" class="form-control" name="firstName" id="firstName" value="${res.firstName}">
             </div>
             <div class="form-group">
-                <label for="last_name">Last Name</label>
-                <input type="text" class="form-control" name="last_name" id="last_name" value="${res.last_name}">
+                <label for="lastName">Last Name</label>
+                <input type="text" class="form-control" name="lastName" id="lastName" value="${res.lastName}">
+            </div>
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="text" class="form-control" name="email" id="email" value="${res.email}">
             </div>
             <div class="form-group">
                 <label for="password">New Password</label>
                 <input type="password" class="form-control" name="password" id="password" value="${res.password}">
             </div>
-            <div class="form-group">
-                <label for="exampleInputFile">User Image</label>
-                <input type="file" id="userimage" name="userimage">
-            </div>
+<!--            <div class="form-group">-->
+<!--                <label for="exampleInputFile">User Image</label>-->
+<!--                <input type="file" id="userimage" name="userimage">-->
+<!--            </div>-->
             <div class="form-buttons">
-                <button value="update_user" data-id="${res.id}" id="update_user" name="update_user" class="btn btn-success">Submit</button>
+                <button type="submit" value="update_user" data-id="${res.id}" id="update_user" name="update_user" class="btn btn-success">Submit</button>
                 <button id="cancelUserEdit" class="btn btn-danger">Cancel</button>
             </div>
         </form>`;
             const submitBtn = document.getElementById('update_user');
-            document.getElementById('closeUserEdit').addEventListener('click', () => usersEditForm.style.display = 'none');
-            document.getElementById('cancelUserEdit').addEventListener('click', () => usersEditForm.style.display = 'none');
+            document.getElementById('closeUserEdit').addEventListener('click', closeUserEditForm);
+            document.getElementById('cancelUserEdit').addEventListener('click', closeUserEditForm);
             usersEditForm.style.display = 'block';
-            let form = document.querySelector('#editUser');
-            submitBtn.addEventListener('click', e => {
+            const form = document.querySelector('#editUser');
+            form.addEventListener('submit', e => {
                 e.preventDefault();
-                updateUser({
-                    submit_user: 'submit_user',
-                    form_data: new FormData(form),
+                options = {
+                    update_user: Object.fromEntries(new FormData(form)),
                     user_id: submitBtn.dataset.id
+                };
+                updateUser(options).then(res => res.json()).then(resJson => {
+                    if (resJson.success) {
+                        usersEditForm.style.display = 'none';
+                        resultModalContent.innerHTML = `<div class="alert alert-success center-message" role="alert">
+                            User Details Updated successfully!
+                    </div>
+                    <div class="form-buttons">
+                        <button id="closeMessage" class="btn btn-success">OK</button>
+                    </div>`;
+                        document.getElementById('closeMessage').addEventListener('click', closeUserEditForm);
+                        messageModal.style.display = 'block';
+                    } else {
+                        usersEditForm.style.display = 'none';
+                        resultModalContent.innerHTML = `<div class="alert alert-danger center-message" role="alert">
+                            Failed to update user details!
+                    </div>
+                    <div class="form-buttons">
+                        <button id="closeErrorMessage" class="btn btn-danger">OK</button>
+                    </div>`;
+                        document.getElementById('closeMessage').addEventListener('click', closeUserEditForm);
+                        messageModal.style.display = 'block';
+                    }
                 });
             });
     });
+}
+
+function closeUserEditForm() {
+    usersEditForm.style.display = 'none';
+    messageModal.style.display = 'none';
+    modalContent.innerHTML = '';
+    resultModalContent.innerHTML = '';
 }

@@ -58,4 +58,9 @@ button {
     text-decoration: none;
 }
 
+.center-message {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
 
