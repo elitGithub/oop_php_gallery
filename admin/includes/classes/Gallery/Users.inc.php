@@ -17,6 +17,12 @@ class Users extends Database
     public string $createdAt;
     public string $updatedAt;
     public $entityDataColumns;
+    const EXCLUDED_FIELDS = [
+        'createdAt',
+        'updatedAt',
+        'username',
+        'id',
+    ];
 
     /**
      * @var string

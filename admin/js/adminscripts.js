@@ -288,11 +288,16 @@ function innerHtml(requestedFile) {
 }
 
 function getPageContent(options = {}) {
-    let deconstructedUrl = options.activeRoute.split('/');
-    let requestedFile = deconstructedUrl[deconstructedUrl.length - 1];
-    requestedFile === '' ? requestedFile = 'index.php' : requestedFile;
-    if (routes.find(route => route === requestedFile)) {
-        return innerHtml(requestedFile);
+    if (!options['rerenderPage']) {
+        let deconstructedUrl = options.activeRoute.split('/');
+        let requestedFile = deconstructedUrl[deconstructedUrl.length - 1];
+        requestedFile === '' ? requestedFile = 'index.php' : requestedFile;
+        if (routes.find(route => route === requestedFile)) {
+            return innerHtml(requestedFile);
+        }
+    }
+    if (options['rerenderPage']) {
+        return innerHtml(options['rerenderPage']);
     }
 }
 
@@ -424,7 +429,7 @@ function manageSingleUser(userId) {
                         document.getElementById('closeMessage').addEventListener('click', closeUserEditForm);
                         messageModal.style.display = 'block';
                     }
-                });
+                }).then(() => getPageContent({rerenderPage: 'users.php'}));
             });
     });
 }

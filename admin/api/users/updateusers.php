@@ -18,7 +18,13 @@ if (isset($_POST['update_user'])) {
         'user_id' => FILTER_VALIDATE_INT
     ];
     $post = filter_var_array($_POST, $filterArgs);
-    $users->updateOne($post['user_id'], $post['update_user']);
+    $user = $users->findOne($post['user_id']);
+
+    $diff = array_diff($user, $post['update_user']);
+    $diff = array_diff(array_keys($diff), Users::EXCLUDED_FIELDS);
+    if (sizeof($diff) > 0) {
+        $users->updateOne($post['user_id'], $post['update_user']);
+    }
     if ($users->countAffectedRows() === 1) {
         die(@json_encode(['success' => true, 'message' => "", 'data' => []]));
     }
