@@ -5,9 +5,8 @@ namespace Gallery;
 
 use PDO;
 
-require_once 'config.inc.php';
 
-class Database
+abstract class Database
 {
     /**
      * @var PDO
