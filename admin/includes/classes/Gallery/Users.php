@@ -3,7 +3,7 @@
 
 namespace Gallery;
 
-require_once 'Database.inc.php';
+require_once 'Database.php';
 
 class Users extends Database
 {
@@ -38,8 +38,8 @@ class Users extends Database
         $this->entityDataColumns = $this->getSchemaColumns();
     }
     
-    public function findUser($username, $password) {
-        $query = "SELECT * FROM `{$this->table}` WHERE username = :username AND password = :password LIMIT 1;";
+    public function findUserByEmailAndPassword($username, $password) {
+        $query = "SELECT * FROM `users` WHERE username = :username AND password = :password LIMIT 1;";
         $this->query($query);
         $this->bind(':username', $username);
         $this->bind(':password', $password);
@@ -48,7 +48,9 @@ class Users extends Database
             foreach ($userData as $column => $value) {
                 $this->assignObjectVars($column, $value);
             }
+            return $this;
         }
+        return false;
     }
 
     private function assignObjectVars($column, $value)

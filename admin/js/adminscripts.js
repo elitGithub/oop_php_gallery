@@ -16,7 +16,13 @@ const routes = [
 const usersEditForm = document.getElementById('userEditForm');
 let activeRoute = window.location.pathname;
 
-document.addEventListener('DOMContentLoaded', () => {
+async function getLoggedInUser() {
+    let data = await fetch('api/users/loggedinuser.php');
+    return data.json();
+}
+
+async function mainPageContent() {
+    const loggedInUser = await getLoggedInUser();
     topNavItems.innerHTML = `<li class="dropdown">
         <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-envelope"></i> <b class="caret"></b></a>
         <ul class="dropdown-menu message-dropdown">
@@ -37,7 +43,7 @@ document.addEventListener('DOMContentLoaded', () => {
         </ul>
     </li>
     <li class="dropdown">
-        <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-user"></i> John Smith <b class="caret"></b></a>
+        <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-user"></i> ${loggedInUser.data['firstName']} ${loggedInUser.data['lastName']}<b class="caret"></b></a>
         <ul class="dropdown-menu">
             <li>
                 <a href="#"><i class="fa fa-fw fa-user"></i> Profile</a>
@@ -50,13 +56,17 @@ document.addEventListener('DOMContentLoaded', () => {
             </li>
             <li class="divider"></li>
             <li>
-                <a href="#"><i class="fa fa-fw fa-power-off"></i> Log Out</a>
+                <a href="#" id="logout-link"><i class="fa fa-fw fa-power-off"></i> Log Out</a>
             </li>
         </ul>
     </li>`;
     sideBarNav.innerHTML = sideBarItems;
+    const logoutLink = document.getElementById('logout-link');
     pageContent.innerHTML = getPageContent({activeRoute});
-});
+    logoutLink.addEventListener('click', logout);
+}
+
+document.addEventListener('DOMContentLoaded', mainPageContent);
 
 function getUserMessages(options = {}) {
     let html = '';
@@ -361,6 +371,11 @@ async function updateUser(options = {}) {
         headers: headers
     };
     return await fetch( url, request);
+}
+
+async function logout() {
+    await fetch('api/users/logout.php');
+    window.location.href = 'login.php';
 }
 
 function manageSingleUser(userId) {

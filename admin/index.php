@@ -3,5 +3,5 @@
 
 
 
-include('includes/admin_content.php');
+require_once ('includes/admin_content.php');
 

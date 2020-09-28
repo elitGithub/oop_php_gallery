@@ -1,9 +1,13 @@
 <?php
 
-use Gallery\User;
+use Gallery\Utils;
 
-ob_start();
 require_once 'init.php';
+ if (!$session->isSignedIn()) {
+     Utils::redirect('login.php');
+ }
+ob_start();
+
 ?>
 <!DOCTYPE html>
 <html lang="en">

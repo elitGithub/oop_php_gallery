@@ -64,3 +64,30 @@ button {
     align-items: center;
 }
 
+.center-form {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.login-form {
+    width: 40%;
+    margin-top: 13%;
+}
+
+.login-form form {
+    margin-bottom: 15px;
+    background: #f7f7f7;
+    padding: 30px;
+}
+.login-form h2 {
+    margin: 0 0 15px;
+}
+.form-control, .login-form-btn {
+    min-height: 38px;
+    border-radius: 2px;
+}
+.login-form-btn {
+    font-size: 15px;
+    font-weight: bold;
+}
