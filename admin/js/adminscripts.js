@@ -219,7 +219,7 @@ function innerHtml(requestedFile) {
         case 'users.php':
             document.title = 'User Management';
             fetchAllUsers().then(usersList => usersList.json().then(users => {
-                return printUsersTableWithData(users);
+                return printUsersTableWithData(users.data);
             }));
             break;
         case 'uploads.php':
@@ -378,36 +378,36 @@ async function logout() {
     window.location.href = 'login.php';
 }
 
-function manageSingleUser(userId) {
+async function manageSingleUser(userId) {
     let url = `api/users/fetchusers.php?find_one&id=${userId}`;
-        fetch(url).then(response => response.json()).then(res => {
+        await fetch(url).then(response => response.json()).then(res => {
             modalContent.innerHTML = `<span id="closeUserEdit" class="close">x</span>
-        <form class="form-align-center" id="editUser">
+        <form class="form-align-center" id="editUser" enctype="multipart/form-data">
             <div class="edit-user-header">
-                Editing User: ${res.username}
+                Editing User: ${res.data.username}
             </div>
             <div class="form-group">
                 <label for="firstName">First Name</label>
-                <input type="text" class="form-control" name="firstName" id="firstName" value="${res.firstName}">
+                <input type="text" class="form-control" name="firstName" id="firstName" value="${res.data.firstName}">
             </div>
             <div class="form-group">
                 <label for="lastName">Last Name</label>
-                <input type="text" class="form-control" name="lastName" id="lastName" value="${res.lastName}">
+                <input type="text" class="form-control" name="lastName" id="lastName" value="${res.data.lastName}">
             </div>
             <div class="form-group">
                 <label for="email">Email</label>
-                <input type="text" class="form-control" name="email" id="email" value="${res.email}">
+                <input type="text" class="form-control" name="email" id="email" value="${res.data.email}">
             </div>
             <div class="form-group">
                 <label for="password">New Password</label>
-                <input type="password" class="form-control" name="password" id="password" value="${res.password}">
+                <input type="password" class="form-control" name="password" id="password" value="${res.data.password}">
             </div>
-<!--            <div class="form-group">-->
-<!--                <label for="exampleInputFile">User Image</label>-->
-<!--                <input type="file" id="userimage" name="userimage">-->
-<!--            </div>-->
+            <div class="form-group">
+                <label for="image"">User Image</label>
+                <input type="file" id="image" name="image">
+            </div>
             <div class="form-buttons">
-                <button type="submit" value="update_user" data-id="${res.id}" id="update_user" name="update_user" class="btn btn-success">Submit</button>
+                <button type="submit" value="update_user" data-id="${res.data.id}" id="update_user" name="update_user" class="btn btn-success">Submit</button>
                 <button id="cancelUserEdit" class="btn btn-danger">Cancel</button>
             </div>
         </form>`;
@@ -416,6 +416,8 @@ function manageSingleUser(userId) {
             document.getElementById('cancelUserEdit').addEventListener('click', closeUserEditForm);
             usersEditForm.style.display = 'block';
             const form = document.querySelector('#editUser');
+            const userImage = document.querySelector('#image');
+            userImage.addEventListener('change', uploadPhoto);
             form.addEventListener('submit', e => {
                 e.preventDefault();
                 options = {
@@ -439,7 +441,7 @@ function manageSingleUser(userId) {
                             Failed to update user details!
                     </div>
                     <div class="form-buttons">
-                        <button id="closeErrorMessage" class="btn btn-danger">OK</button>
+                        <button id="closeMessage" class="btn btn-danger">OK</button>
                     </div>`;
                         document.getElementById('closeMessage').addEventListener('click', closeUserEditForm);
                         messageModal.style.display = 'block';
@@ -454,4 +456,11 @@ function closeUserEditForm() {
     messageModal.style.display = 'none';
     modalContent.innerHTML = '';
     resultModalContent.innerHTML = '';
+}
+
+function uploadPhoto(e) {
+    const formData = new FormData();
+    const userImage = document.querySelector('#image');
+    formData.append('useravatar', userImage.files[0]);
+    console.log(formData.entries());
 }

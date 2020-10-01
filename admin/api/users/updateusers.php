@@ -1,6 +1,8 @@
 <?php
 require_once '../../includes/init.php';
 use Gallery\Users;
+use Gallery\Utils;
+
 header("Access-Control-Allow-Origin: *");
 header("Content-Type: application/json");
 
@@ -10,7 +12,7 @@ $_POST = json_decode(file_get_contents('php://input'), true);
 if (isset($_POST['update_user'])) {
     foreach ($_POST['update_user'] as $key => $value) {
         if (!in_array($key, $users->entityDataColumns)) {
-            die(@json_encode(['success' => false, 'message' => "Unrecognized column {$key} in request", 'data' => []]));
+            Utils::sendFinalResponseAsJson(false, "Unrecognized column {$key} in request", []);
         }
     }
     $filterArgs = [
@@ -24,9 +26,11 @@ if (isset($_POST['update_user'])) {
     $diff = array_diff(array_keys($diff), Users::EXCLUDED_FIELDS);
     if (sizeof($diff) > 0) {
         $users->updateOne($post['user_id'], $post['update_user']);
+        if ($users->countAffectedRows() === 1) {
+            Utils::sendFinalResponseAsJson(true, '', []);
+        }
     }
-    if ($users->countAffectedRows() === 1) {
-        die(@json_encode(['success' => true, 'message' => "", 'data' => []]));
-    }
-    die(@json_encode(['success' => false, 'message' => "Nothing was changed", 'data' => ['errors' => $users->retrieveError()]]));
+    Utils::sendFinalResponseAsJson(false, 'Nothing was changed', ['errors' => $users->retrieveError()]);
 }
+
+Utils::sendFinalResponseAsJson(false, 'No post data!', ['errors' => $_POST]);
