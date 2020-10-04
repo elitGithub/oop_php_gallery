@@ -1,14 +1,26 @@
 <?php
 
-// DB Connection
+/**
+* Main Config file
+* DB constants
+* Allowed file upload types
+* Max upload file size (may also need to match configuration in php.ini)
+* Site root url
+* Site root directory path
+**/
 
-define('DB_HOST', 'localhost');
-define('DB_USER', 'root');
-define('DB_PASS', '');
-define('DB_NAME', 'gallery_db');
+const DB_HOST = 'localhost';
+const DB_USER = 'root';
+const DB_PASS = '';
+const DB_NAME = 'gallery_db';
 
-define('ALLOWED_MIME_TYPES', [
+const ALLOWED_MIME_TYPES = [
     'jpg' => 'image/jpeg',
     'png' => 'image/png',
     'gif' => 'image/gif',
-]);
+];
+
+const MAX_ALLOWED_FILE_SIZE = '3000000';
+
+const ROOT_URL = 'http://localhost/';
+const ROOT_PATH = '/';

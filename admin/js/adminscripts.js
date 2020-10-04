@@ -14,6 +14,8 @@ const routes = [
     'comments.php',
 ];
 const usersEditForm = document.getElementById('userEditForm');
+const browserCookies = {};
+
 let activeRoute = window.location.pathname;
 
 async function getLoggedInUser() {
@@ -361,16 +363,11 @@ function printUsersTableWithData(data) {
 
 async function updateUser(options = {}) {
     let url = 'api/users/updateusers.php';
-    const headers = new Headers();
-    headers.append('Content-Type', 'application/json');
     let request = {
         method: "POST",
-        body: JSON.stringify(options),
-        datatype: 'json',
-        credentials: 'include',
-        headers: headers
+        body: options,
     };
-    return await fetch( url, request);
+    return (await fetch(url, request)).json();
 }
 
 async function logout() {
@@ -385,6 +382,9 @@ async function manageSingleUser(userId) {
         <form class="form-align-center" id="editUser" enctype="multipart/form-data">
             <div class="edit-user-header">
                 Editing User: ${res.data.username}
+            </div>
+            <div class="img img-thumbnail center-form user-avatar-wrapper">
+                  <img class="user-avatar" src="includes/resources/uploads/${res.data.image}" alt="user avatar" id="user_image">
             </div>
             <div class="form-group">
                 <label for="firstName">First Name</label>
@@ -416,15 +416,19 @@ async function manageSingleUser(userId) {
             document.getElementById('cancelUserEdit').addEventListener('click', closeUserEditForm);
             usersEditForm.style.display = 'block';
             const form = document.querySelector('#editUser');
-            const userImage = document.querySelector('#image');
-            userImage.addEventListener('change', uploadPhoto);
             form.addEventListener('submit', e => {
                 e.preventDefault();
-                options = {
-                    update_user: Object.fromEntries(new FormData(form)),
-                    user_id: submitBtn.dataset.id
-                };
-                updateUser(options).then(res => res.json()).then(resJson => {
+                const formData = new FormData();
+                for (let forms of form) {
+                    formData.append(forms.name, forms.value);
+                }
+                formData.append('user_id', submitBtn.dataset.id);
+                const userImage = document.querySelector('#image');
+                if (userImage.files.length > 0) {
+                    formData.append('image', userImage.files[0]);
+                }
+                updateUser(formData).then(resJson => {
+                    console.log(resJson);
                     if (resJson.success) {
                         usersEditForm.style.display = 'none';
                         resultModalContent.innerHTML = `<div class="alert alert-success center-message" role="alert">
@@ -438,7 +442,7 @@ async function manageSingleUser(userId) {
                     } else {
                         usersEditForm.style.display = 'none';
                         resultModalContent.innerHTML = `<div class="alert alert-danger center-message" role="alert">
-                            Failed to update user details!
+                            Failed to update user details! ${resJson.message}.
                     </div>
                     <div class="form-buttons">
                         <button id="closeMessage" class="btn btn-danger">OK</button>
@@ -458,9 +462,7 @@ function closeUserEditForm() {
     resultModalContent.innerHTML = '';
 }
 
-function uploadPhoto(e) {
-    const formData = new FormData();
-    const userImage = document.querySelector('#image');
-    formData.append('useravatar', userImage.files[0]);
-    console.log(formData.entries());
+// For general purpose file upload
+async function uploadFile() {
+// TODO: implement usage
 }

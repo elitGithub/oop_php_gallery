@@ -15,7 +15,9 @@ class Session
      */
     public function __construct()
     {
-        session_start();
+        if (session_status() == PHP_SESSION_NONE) {
+            session_start();
+        }
         $this->checkLogin();
         $this->checkMessage();
     }
@@ -44,6 +46,9 @@ class Session
             $user = (new Users())->findUserByEmailAndPassword($username, $password);
         }
         $this->userID = $_SESSION['user_id'] = $user->id;
+        $_SESSION['token'] = md5(uniqid(mt_rand(), true));
+        $cookieData = json_encode(['user_id' => $this->userID, 'time' => time(), 'token' => $_SESSION['token']]);
+        setcookie('login', $cookieData, time() + 3600);
     }
 
     /**
@@ -60,6 +65,7 @@ class Session
         unset($this->userID);
         unset($_SESSION['user_id']);
         $this->signedIn = false;
+        setcookie('login', '', time() - 3600);
         session_destroy();
     }
 
@@ -87,5 +93,3 @@ class Session
         }
     }
 }
-
-$session = new Session();

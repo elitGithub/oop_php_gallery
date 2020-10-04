@@ -7,6 +7,5 @@ use Gallery\Users;
 use Gallery\Utils;
 
 
-$users = new Users();
-$session = new Session();
+
 Utils::sendFinalResponseAsJson(true, '', $users->findOne($session->getLoggedInUser()));

@@ -2,30 +2,35 @@
 require_once '../../includes/init.php';
 use Gallery\Users;
 use Gallery\Utils;
+$userid = intval($_POST['user_id']);
+
+if (!is_int($userid)) {
+    Utils::sendFinalResponseAsJson(false, "User ID is not a number!", []);
+}
 
 header("Access-Control-Allow-Origin: *");
-header("Content-Type: application/json");
-
-$users = new Users();
-$_POST = json_decode(file_get_contents('php://input'), true);
 
 if (isset($_POST['update_user'])) {
-    foreach ($_POST['update_user'] as $key => $value) {
+    unset($_POST['update_user']);
+    unset($_POST['user_id']);
+    foreach ($_POST as $key => $value) {
         if (!in_array($key, $users->entityDataColumns)) {
             Utils::sendFinalResponseAsJson(false, "Unrecognized column {$key} in request", []);
         }
     }
-    $filterArgs = [
-        'update_user' => ['filter' => FILTER_SANITIZE_STRING, 'flags' => FILTER_FORCE_ARRAY],
-        'user_id' => FILTER_VALIDATE_INT
-    ];
-    $post = filter_var_array($_POST, $filterArgs);
-    $user = $users->findOne($post['user_id']);
 
-    $diff = array_diff($user, $post['update_user']);
+    $user = $users->findOne($userid);
+    if (!empty($_FILES)) {
+        $fileUpload = Utils::uploadAndMoveFile($_FILES['image'], true);
+    }
+    if (isset($fileUpload) && !$fileUpload) {
+        Utils::sendFinalResponseAsJson(false, 'Error uploading file', ['errors' => $users->retrieveError()]);
+    }
+
+    $diff = array_diff($user, $_POST);
     $diff = array_diff(array_keys($diff), Users::EXCLUDED_FIELDS);
     if (sizeof($diff) > 0) {
-        $users->updateOne($post['user_id'], $post['update_user']);
+        $users->updateOne($userid, $_POST);
         if ($users->countAffectedRows() === 1) {
             Utils::sendFinalResponseAsJson(true, '', []);
         }
