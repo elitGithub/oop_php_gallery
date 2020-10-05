@@ -100,3 +100,14 @@ button {
     background-color: #fdfef4;
     border: none;
 }
+
+.errors {
+    display: none;
+    border: none;
+    justify-content: center;
+    align-items: center;
+}
+
+.add-users-button {
+    margin: 0 1% 1% 0;
+}

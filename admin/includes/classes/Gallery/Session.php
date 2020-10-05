@@ -43,7 +43,7 @@ class Session
     {
         $user = $userObj;
         if (!$user) {
-            $user = (new Users())->findUserByEmailAndPassword($username, $password);
+            $user = (new Users())->findUserByEmailAndPassword($username, md5($password));
         }
         $this->userID = $_SESSION['user_id'] = $user->id;
         $_SESSION['token'] = md5(uniqid(mt_rand(), true));
@@ -65,6 +65,7 @@ class Session
         unset($this->userID);
         unset($_SESSION['user_id']);
         $this->signedIn = false;
+        unset($_SESSION['token']);
         setcookie('login', '', time() - 3600);
         session_destroy();
     }

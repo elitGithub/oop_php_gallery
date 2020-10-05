@@ -2,6 +2,12 @@
 require_once '../../includes/init.php';
 use Gallery\Users;
 use Gallery\Utils;
+
+if (!$session->isSignedIn()) {
+    session_destroy();
+    Utils::redirect('/admin/login.php');
+}
+
 $userid = intval($_POST['user_id']);
 
 if (!is_int($userid)) {
@@ -30,6 +36,10 @@ if (isset($_POST['update_user'])) {
     $diff = array_diff($user, $_POST);
     $diff = array_diff(array_keys($diff), Users::EXCLUDED_FIELDS);
     if (sizeof($diff) > 0) {
+        if (empty($_POST['image'])) {
+            $_POST['image'] = $user['image'];
+        }
+        $users->validateRequestObject();
         $users->updateOne($userid, $_POST);
         if ($users->countAffectedRows() === 1) {
             Utils::sendFinalResponseAsJson(true, '', []);

@@ -15,6 +15,8 @@ const routes = [
 ];
 const usersEditForm = document.getElementById('userEditForm');
 const browserCookies = {};
+const errors = [];
+
 
 let activeRoute = window.location.pathname;
 
@@ -324,6 +326,7 @@ function printUsersTableWithData(data) {
             User Management
             <small>Manage Users</small>
         </h1>
+        <button id="add_users_button" class="btn btn-primary pull-right add-users-button">Add User</button>
     <table class="table table-striped table-bordered">
     <tr>
     <th>ID</th>
@@ -359,6 +362,12 @@ function printUsersTableWithData(data) {
         console.log(e.target.id);
     }));
 
+    document.getElementById('add_users_button').addEventListener('click', e => addNewUser(e));
+
+}
+
+async function addNewUser(e) {
+    // TODO add insert form submission with validation
 }
 
 async function updateUser(options = {}) {
@@ -377,82 +386,48 @@ async function logout() {
 
 async function manageSingleUser(userId) {
     let url = `api/users/fetchusers.php?find_one&id=${userId}`;
-        await fetch(url).then(response => response.json()).then(res => {
-            modalContent.innerHTML = `<span id="closeUserEdit" class="close">x</span>
-        <form class="form-align-center" id="editUser" enctype="multipart/form-data">
-            <div class="edit-user-header">
-                Editing User: ${res.data.username}
-            </div>
-            <div class="img img-thumbnail center-form user-avatar-wrapper">
-                  <img class="user-avatar" src="includes/resources/uploads/${res.data.image}" alt="user avatar" id="user_image">
-            </div>
-            <div class="form-group">
-                <label for="firstName">First Name</label>
-                <input type="text" class="form-control" name="firstName" id="firstName" value="${res.data.firstName}">
-            </div>
-            <div class="form-group">
-                <label for="lastName">Last Name</label>
-                <input type="text" class="form-control" name="lastName" id="lastName" value="${res.data.lastName}">
-            </div>
-            <div class="form-group">
-                <label for="email">Email</label>
-                <input type="text" class="form-control" name="email" id="email" value="${res.data.email}">
-            </div>
-            <div class="form-group">
-                <label for="password">New Password</label>
-                <input type="password" class="form-control" name="password" id="password" value="${res.data.password}">
-            </div>
-            <div class="form-group">
-                <label for="image"">User Image</label>
-                <input type="file" id="image" name="image">
-            </div>
-            <div class="form-buttons">
-                <button type="submit" value="update_user" data-id="${res.data.id}" id="update_user" name="update_user" class="btn btn-success">Submit</button>
-                <button id="cancelUserEdit" class="btn btn-danger">Cancel</button>
-            </div>
-        </form>`;
-            const submitBtn = document.getElementById('update_user');
-            document.getElementById('closeUserEdit').addEventListener('click', closeUserEditForm);
-            document.getElementById('cancelUserEdit').addEventListener('click', closeUserEditForm);
-            usersEditForm.style.display = 'block';
+    await buildUserEditForm(await fetch(url));
+    usersEditForm.style.display = 'block';
+
+    usersEditForm.addEventListener('submit', e => {
+            e.preventDefault();
             const form = document.querySelector('#editUser');
-            form.addEventListener('submit', e => {
-                e.preventDefault();
-                const formData = new FormData();
-                for (let forms of form) {
-                    formData.append(forms.name, forms.value);
+            if (!validateForm(form)) {
+                return false;
+            }
+            const formData = new FormData();
+            for (let forms of form) {
+                formData.append(forms.name, forms.value);
+            }
+            formData.append('user_id', document.getElementById('update_user').dataset.id);
+            const userImage = document.querySelector('#image');
+            if (userImage.files.length > 0) {
+                formData.append('image', userImage.files[0]);
+            }
+            updateUser(formData).then(resJson => {
+                if (resJson.success) {
+                    usersEditForm.style.display = 'none';
+                    resultModalContent.innerHTML = `<div class="alert alert-success center-message" role="alert">
+                        User Details Updated successfully!
+                </div>
+                <div class="form-buttons">
+                    <button id="closeMessage" class="btn btn-success">OK</button>
+                </div>`;
+                    document.getElementById('closeMessage').addEventListener('click', closeUserEditForm);
+                    messageModal.style.display = 'block';
+                } else {
+                    usersEditForm.style.display = 'none';
+                    resultModalContent.innerHTML = `<div class="alert alert-danger center-message" role="alert">
+                        Failed to update user details! ${resJson.message}.
+                </div>
+                <div class="form-buttons">
+                    <button id="closeMessage" class="btn btn-danger">OK</button>
+                </div>`;
+                    document.getElementById('closeMessage').addEventListener('click', closeUserEditForm);
+                    messageModal.style.display = 'block';
                 }
-                formData.append('user_id', submitBtn.dataset.id);
-                const userImage = document.querySelector('#image');
-                if (userImage.files.length > 0) {
-                    formData.append('image', userImage.files[0]);
-                }
-                updateUser(formData).then(resJson => {
-                    console.log(resJson);
-                    if (resJson.success) {
-                        usersEditForm.style.display = 'none';
-                        resultModalContent.innerHTML = `<div class="alert alert-success center-message" role="alert">
-                            User Details Updated successfully!
-                    </div>
-                    <div class="form-buttons">
-                        <button id="closeMessage" class="btn btn-success">OK</button>
-                    </div>`;
-                        document.getElementById('closeMessage').addEventListener('click', closeUserEditForm);
-                        messageModal.style.display = 'block';
-                    } else {
-                        usersEditForm.style.display = 'none';
-                        resultModalContent.innerHTML = `<div class="alert alert-danger center-message" role="alert">
-                            Failed to update user details! ${resJson.message}.
-                    </div>
-                    <div class="form-buttons">
-                        <button id="closeMessage" class="btn btn-danger">OK</button>
-                    </div>`;
-                        document.getElementById('closeMessage').addEventListener('click', closeUserEditForm);
-                        messageModal.style.display = 'block';
-                    }
-                }).then(() => getPageContent({rerenderPage: 'users.php'}));
-            });
-    });
+            }).then(() => getPageContent({rerenderPage: 'users.php'}));
+        });
 }
 
 function closeUserEditForm() {
@@ -462,7 +437,87 @@ function closeUserEditForm() {
     resultModalContent.innerHTML = '';
 }
 
+async function buildUserEditForm(userData) {
+    userData.json().then(userObj => {
+        modalContent.innerHTML = `<span id="closeUserEdit" class="close">x</span>
+        <div class="errors"></div>
+        <form class="form-align-center" id="editUser" enctype="multipart/form-data">
+            <div class="edit-user-header">
+                Editing User: ${userObj.data.username}
+            </div>
+            <div class="img img-thumbnail center-form user-avatar-wrapper">
+                  <img class="user-avatar" src="includes/resources/uploads/${userObj.data.image}" alt="user avatar" id="user_image">
+            </div>
+            <div class="form-group">
+                <label for="firstName">First Name</label>
+                <input type="text" class="form-control" required minlength="2" name="firstName" id="firstName" value="${userObj.data.firstName}">
+            </div>
+            <div class="form-group">
+                <label for="lastName">Last Name</label>
+                <input type="text" class="form-control"  name="lastName" id="lastName" value="${userObj.data.lastName}">
+            </div>
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" class="form-control" required minlength="6" name="email" id="email" value="${userObj.data.email}">
+            </div>
+            <div class="form-group">
+                <label for="password">New Password</label>
+                <input type="password" class="form-control" required name="password" minlength="6" maxlength="32" id="password" value="${userObj.data.password}">
+            </div>
+            <div class="form-group">
+                <label for="image"">User Image</label>
+                <input type="file" id="image" name="image">
+            </div>
+            <div class="form-buttons">
+                <button type="submit" value="update_user" data-id="${userObj.data.id}" id="update_user" name="update_user" class="btn btn-success">Submit</button>
+                <button id="cancelUserEdit" class="btn btn-danger">Cancel</button>
+            </div>
+        </form>`;
+        document.getElementById('closeUserEdit').addEventListener('click', closeUserEditForm);
+        document.getElementById('cancelUserEdit').addEventListener('click', closeUserEditForm);
+    });
+}
+
 // For general purpose file upload
 async function uploadFile() {
 // TODO: implement usage
+}
+
+/**
+ *
+ * @param form
+ * @returns {boolean}
+ */
+function validateForm(form) {
+    // TODO: implement form validation
+    for (let i = 0; i < form.elements.length; i++) {
+        if (form[i].name === 'firstName' || form[i].name === 'lastname' || form[i].name === 'password') {
+            if (form[i].value === '' || form[i].value.length < 2) {
+                console.log('xren');
+                errors.push('You are missing required fields!');
+            }
+        }
+        if (form[i].name === 'email') {
+            const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
+            if (!emailRegex.test(form[i].value)) {
+                errors.push('Invalid email');
+            }
+        }
+
+        if (form[i].name === 'image' && form[i].files && form[i].files[0]) {
+            let filePath = form[i].value;
+            let allowedExtensions = /(\.jpg|\.jpeg|\.png|\.gif)$/i;
+            if (!allowedExtensions.exec(filePath)) {
+                errors.push('Invalid file');
+                form[i].value = '';
+            }
+        }
+    }
+    if (errors.length > 1) {
+        for (let error of errors) {
+            document.querySelector('.errors').innerHTML = error;
+        }
+        document.querySelector('.errors').style.display = 'flex';
+    }
+    return errors.length < 1;
 }

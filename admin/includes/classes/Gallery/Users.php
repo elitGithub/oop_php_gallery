@@ -58,4 +58,24 @@ class Users extends Database
         $this->{$column} = $value;
     }
 
+    public function validateRequestObject()
+    {
+        if (!is_array($_POST) || empty($_POST)) {
+            Utils::sendFinalResponseAsJson(false, 'Wrong request data', []);
+        }
+
+        foreach ($_POST as $postKey => $postItem) {
+            if ($postKey === 'email') {
+                $_POST[$postKey] = filter_var($postItem, FILTER_SANITIZE_EMAIL);
+            }
+            if ($postKey === 'password') {
+                $_POST[$postKey] = md5($postItem);
+            }
+            if (in_array($postKey, ['firstName', 'lastName'])) {
+                $_POST[$postKey] = filter_var($postItem, FILTER_SANITIZE_STRING);
+                $_POST[$postKey] = preg_replace('/\d+/u', '', $postItem);
+            }
+        }
+    }
+
 }
