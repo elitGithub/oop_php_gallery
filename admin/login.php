@@ -1,9 +1,8 @@
 <?php
-
-use Gallery\Users;
+require_once './includes/init.php';
+global $users, $session;
 use Gallery\Utils;
 
-require_once './includes/init.php';
 $errMessage = '';
 $username = '';
 $password = '';
@@ -13,8 +12,7 @@ if ($session->isSignedIn()) {
 
 if (isset($_POST['submit'])) {
     $username = trim($_POST['username']);
-    $password = trim($_POST['password']);
-    $users = new Users();
+    $password = md5(trim($_POST['password']));
     if ($users->findUserByEmailAndPassword($username, $password)) {
         $session->login($username, $password, $users);
         Utils::redirect('index.php');

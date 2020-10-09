@@ -15,7 +15,6 @@ const routes = [
 ];
 const usersEditForm = document.getElementById('userEditForm');
 const browserCookies = {};
-const errors = [];
 
 
 let activeRoute = window.location.pathname;
@@ -367,7 +366,49 @@ function printUsersTableWithData(data) {
 }
 
 async function addNewUser(e) {
-    // TODO add insert form submission with validation
+    modalContent.innerHTML = `<span id="closeUserEdit" class="close">x</span>
+        <div class="errors alert-danger"></div>
+        <form class="form-align-center" id="createNewUser" enctype="multipart/form-data">
+            <div class="edit-user-header">
+               Add New User
+            </div>
+            <div class="form-group">
+                <label for="username">User Name</label>
+                <input type="text" class="form-control" required minlength="2" name="username" id="username">
+            </div>
+            <div class="form-group">
+                <label for="firstName">First Name</label>
+                <input type="text" class="form-control" required minlength="2" name="firstName" id="firstName">
+            </div>
+            <div class="form-group">
+                <label for="lastName">Last Name</label>
+                <input type="text" class="form-control"  name="lastName" id="lastName">
+            </div>
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" class="form-control" required minlength="6" name="email" id="email">
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" class="form-control" required name="password" minlength="6" maxlength="32" id="password">
+            </div>
+            <div class="form-group">
+                <label for="confirm_password">Confirm Password</label>
+                <input type="password" class="form-control" required name="confirm_password" minlength="6" maxlength="32" id="confirm_password">
+            </div>
+            <div class="form-group">
+                <label for="image"">User Image</label>
+                <input type="file" id="image" name="image">
+            </div>
+            <div class="form-buttons">
+                <button type="submit" value="create_new" id="create_new" name="create_new" class="btn btn-success">Create </button>
+                <button id="cancelUserEdit" class="btn btn-danger">Cancel</button>
+            </div>
+        </form>`;
+    document.getElementById('closeUserEdit').addEventListener('click', closeUserEditForm);
+    document.getElementById('cancelUserEdit').addEventListener('click', closeUserEditForm);
+    document.getElementById('create_new').addEventListener('click', e => createNewUser(e));
+    usersEditForm.style.display = 'block';
 }
 
 async function updateUser(options = {}) {
@@ -384,6 +425,11 @@ async function logout() {
     window.location.href = 'login.php';
 }
 
+/**
+ *
+ * @param userId
+ * @returns {Promise<void>}
+ */
 async function manageSingleUser(userId) {
     let url = `api/users/fetchusers.php?find_one&id=${userId}`;
     await buildUserEditForm(await fetch(url));
@@ -430,6 +476,9 @@ async function manageSingleUser(userId) {
         });
 }
 
+/**
+ *
+ */
 function closeUserEditForm() {
     usersEditForm.style.display = 'none';
     messageModal.style.display = 'none';
@@ -437,6 +486,11 @@ function closeUserEditForm() {
     resultModalContent.innerHTML = '';
 }
 
+/**
+ *
+ * @param userData
+ * @returns {Promise<void>}
+ */
 async function buildUserEditForm(userData) {
     userData.json().then(userObj => {
         modalContent.innerHTML = `<span id="closeUserEdit" class="close">x</span>
@@ -462,7 +516,7 @@ async function buildUserEditForm(userData) {
             </div>
             <div class="form-group">
                 <label for="password">New Password</label>
-                <input type="password" class="form-control" required name="password" minlength="6" maxlength="32" id="password" value="${userObj.data.password}">
+                <input type="password" class="form-control" name="password" minlength="6" maxlength="32" id="password">
             </div>
             <div class="form-group">
                 <label for="image"">User Image</label>
@@ -490,13 +544,27 @@ async function uploadFile() {
  */
 function validateForm(form) {
     // TODO: implement form validation
+    let errors = [];
     for (let i = 0; i < form.elements.length; i++) {
-        if (form[i].name === 'firstName' || form[i].name === 'lastname' || form[i].name === 'password') {
+        if (form[i].name === 'firstName' || form[i].name === 'lastname') {
             if (form[i].value === '' || form[i].value.length < 2) {
-                console.log('xren');
                 errors.push('You are missing required fields!');
             }
         }
+
+        if (form.id === 'createNewUser') {
+            const password = document.getElementById('password');
+            const confirmPassword = document.getElementById('confirm_password');
+            if (form[i].name === 'password' || form[i].name === 'confirm_password') {
+                if (form[i].value === '' || form[i].value.length < 2) {
+                    errors.push('Password too short!');
+                }
+                if (password.value !== confirmPassword.value) {
+                    errors.push('Passwords do not match!');
+                }
+            }
+        }
+
         if (form[i].name === 'email') {
             const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
             if (!emailRegex.test(form[i].value)) {
@@ -513,11 +581,76 @@ function validateForm(form) {
             }
         }
     }
-    if (errors.length > 1) {
+    if (errors.length > 0) {
         for (let error of errors) {
             document.querySelector('.errors').innerHTML = error;
         }
         document.querySelector('.errors').style.display = 'flex';
     }
     return errors.length < 1;
+}
+
+async function createNewUser(e) {
+    e.preventDefault();
+    const form = document.getElementById('createNewUser');
+    if (validateForm(form)) {
+        const formData = new FormData();
+        for (let forms of form) {
+            formData.append(forms.name, forms.value);
+        }
+        const userImage = document.querySelector('#image');
+        if (userImage.files.length > 0) {
+            formData.append('image', userImage.files[0]);
+        }
+
+        const username = document.getElementById('username');
+        let validation = await validateNewUser(username.value);
+        if (validation.success === true) {
+            let url = 'api/users/insertusers.php';
+            let request = {
+                method: "POST",
+                body: formData,
+            };
+            await fetch(url, request).then(resJson => {
+                if (resJson.success) {
+                    usersEditForm.style.display = 'none';
+                    resultModalContent.innerHTML = `<div class="alert alert-success center-message" role="alert">
+                        User Details Updated successfully!
+                </div>
+                <div class="form-buttons">
+                    <button id="closeMessage" class="btn btn-success">OK</button>
+                </div>`;
+                    document.getElementById('closeMessage').addEventListener('click', closeUserEditForm);
+                    messageModal.style.display = 'block';
+                } else {
+                    usersEditForm.style.display = 'none';
+                    resultModalContent.innerHTML = `<div class="alert alert-danger center-message" role="alert">
+                        Failed to update user details! ${resJson.message}.
+                </div>
+                <div class="form-buttons">
+                    <button id="closeMessage" class="btn btn-danger">OK</button>
+                </div>`;
+                    document.getElementById('closeMessage').addEventListener('click', closeUserEditForm);
+                    messageModal.style.display = 'block';
+                }
+            }).then(() => getPageContent({rerenderPage: 'users.php'}));
+        } else {
+            document.querySelector('.errors').innerHTML = 'User already exists'
+            document.querySelector('.errors').style.display = 'flex';
+        }
+    }
+    return false;
+
+}
+
+async function validateNewUser(username) {
+
+    if (username.length < 1 || username === '') {
+        return false;
+    }
+
+    let url = `api/users/fetchusers.php?find_by_username&username=${username}`;
+    let result = await fetch(url);
+    return result.json();
+
 }

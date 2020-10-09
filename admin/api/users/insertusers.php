@@ -1,27 +1,63 @@
 <?php
-
 require_once '../../includes/init.php';
-use Gallery\Users;
+global $users;
+
 use Gallery\Utils;
 
-$users = new Users();
-
-$_POST = json_decode(file_get_contents('php://input'), true);
-
-if (isset($_POST['create_user'])) {
-    foreach ($_POST['update_user'] as $key => $value) {
-        if (!in_array($key, $users->entityDataColumns)) {
-            Utils::sendFinalResponseAsJson(false, "Unrecognized column {$key} in request", []);
-        }
-    }
-    $filterArgs = [
-        'update_user' => ['filter' => FILTER_SANITIZE_STRING, 'flags' => FILTER_FORCE_ARRAY],
-        'user_id' => FILTER_VALIDATE_INT
-    ];
-    $data = filter_var_array($_POST, $filterArgs);
-    $users->insert($data);
-    if ($users->lastInsertId()) {
-        Utils::sendFinalResponseAsJson(true, "", []);
-    }
-    Utils::sendFinalResponseAsJson(false, 'Could not insert new user', $users->retrieveError());
+if (!$session->isSignedIn()) {
+    $session->logout();
+    Utils::redirect('/admin/login.php');
 }
+
+header("Access-Control-Allow-Origin: *");
+
+if ($_POST['password'] !== $_POST['confirm_password']) {
+    Utils::sendFinalResponseAsJson(false, 'Passwords do not match', []);
+}
+
+foreach ($_POST as $key => $value) {
+    if ($key === 'create_new' || $key === 'confirm_password') {
+        continue;
+    }
+    if (!in_array($key, $users->entityDataColumns)) {
+        Utils::sendFinalResponseAsJson(false, "Unrecognized column {$key} in request", []);
+    }
+}
+
+if (!empty($_FILES)) {
+    $fileUpload = Utils::uploadAndMoveFile($_FILES['image'], true);
+}
+if (isset($fileUpload) && !$fileUpload) {
+    Utils::sendFinalResponseAsJson(false, 'Error uploading file', ['errors' => $users->retrieveError()]);
+}
+
+if ($_POST['password'] !== $_POST['confirm_password']) {
+    Utils::sendFinalResponseAsJson(false, 'Passwords do not match', []);
+}
+
+foreach ($_POST as $key => $value) {
+    if ($key === 'create_new' || $key === 'confirm_password') {
+        continue;
+    }
+    if (!in_array($key, $users->entityDataColumns)) {
+        Utils::sendFinalResponseAsJson(false, "Unrecognized column {$key} in request", []);
+    }
+}
+
+if (!empty($_FILES)) {
+    $fileUpload = Utils::uploadAndMoveFile($_FILES['image'], true);
+}
+if (isset($fileUpload) && !$fileUpload) {
+    Utils::sendFinalResponseAsJson(false, 'Error uploading file', ['errors' => $users->retrieveError()]);
+}
+
+unset($_POST['confirm_password']);
+unset($_POST['create_new']);
+$users->validateRequestObject();
+
+
+$users->validateRequestObject();
+$users->insert($_POST);
+
+Utils::sendFinalResponseAsJson(true, '', []);
+

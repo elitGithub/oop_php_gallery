@@ -1,10 +1,12 @@
 <?php
 require_once '../../includes/init.php';
+global $users, $session;
+
 use Gallery\Users;
 use Gallery\Utils;
 
 if (!$session->isSignedIn()) {
-    session_destroy();
+    $session->logout();
     Utils::redirect('/admin/login.php');
 }
 
@@ -38,6 +40,10 @@ if (isset($_POST['update_user'])) {
     if (sizeof($diff) > 0) {
         if (empty($_POST['image'])) {
             $_POST['image'] = $user['image'];
+        }
+
+        if (empty($_POST['password'])) {
+            unset($_POST['password']);
         }
         $users->validateRequestObject();
         $users->updateOne($userid, $_POST);

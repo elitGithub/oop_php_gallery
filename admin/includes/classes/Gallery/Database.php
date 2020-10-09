@@ -189,4 +189,21 @@ abstract class Database
         $this->bind(":{$this->idField}", $id);
         $this->execute();
     }
+
+    /**
+     * @param array $input
+     * @return array
+     */
+    public function flattenArray(array $input) {
+        if (!is_array($input) || empty($input)) {
+            return $input;
+        }
+        foreach ($input as $value) {
+            if (is_array($value)) {
+                $this->flattenArray($value);
+            }
+            $output[] = $value;
+        }
+        return $output;
+    }
 }

@@ -17,6 +17,7 @@ class Users extends Database
     public string $createdAt;
     public string $updatedAt;
     public $entityDataColumns;
+    public array $columnFields = [];
     const EXCLUDED_FIELDS = [
         'createdAt',
         'updatedAt',
@@ -37,7 +38,12 @@ class Users extends Database
         parent::__construct();
         $this->entityDataColumns = $this->getSchemaColumns();
     }
-    
+
+    /**
+     * @param $username
+     * @param $password
+     * @return $this|false
+     */
     public function findUserByEmailAndPassword($username, $password) {
         $query = "SELECT * FROM `users` WHERE username = :username AND password = :password LIMIT 1;";
         $this->query($query);
@@ -53,12 +59,20 @@ class Users extends Database
         return false;
     }
 
-    private function assignObjectVars($column, $value)
+    /**
+     * @param $column
+     * @param $value
+     */
+    private function assignObjectVars($column, $value): void
     {
         $this->{$column} = $value;
     }
 
-    public function validateRequestObject()
+    /**
+     * Validate existing post super global
+     * Not intended to return errors
+     */
+    public function validateRequestObject() : void
     {
         if (!is_array($_POST) || empty($_POST)) {
             Utils::sendFinalResponseAsJson(false, 'Wrong request data', []);
@@ -78,4 +92,17 @@ class Users extends Database
         }
     }
 
+    /**
+     * @return array
+     */
+    public function retrieveEntityInfo(): array
+    {
+        if (!$this->id) {
+            die('No Id');
+        }
+        $data = $this->findOne($this->id);
+        foreach ($data as $column => $value) {
+            $this->columnFields[$column] = $value;
+        }
+    }
 }
