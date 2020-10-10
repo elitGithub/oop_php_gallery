@@ -93,6 +93,7 @@ button {
 }
 
 .user-avatar {
+    width: 150px;
     border-radius: 50%;
 }
 

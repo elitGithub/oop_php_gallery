@@ -24,3 +24,5 @@ const MAX_ALLOWED_FILE_SIZE = '3000000';
 
 const ROOT_URL = 'http://localhost/';
 const ROOT_PATH = '/';
+
+error_reporting(0);

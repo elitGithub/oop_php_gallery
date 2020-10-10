@@ -45,7 +45,7 @@ if (isset($_POST['update_user'])) {
         if (empty($_POST['password'])) {
             unset($_POST['password']);
         }
-        $users->validateRequestObject();
+        $users->purifyPostObject();
         $users->updateOne($userid, $_POST);
         if ($users->countAffectedRows() === 1) {
             Utils::sendFinalResponseAsJson(true, '', []);

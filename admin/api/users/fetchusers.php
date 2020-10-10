@@ -25,7 +25,7 @@ if (isset($_GET['find_one']) && isset($_GET['id'])) {
 
 if (isset($_GET['find_by_username']) && isset($_GET['username'])) {
     $exist = $users->findByUsername($_GET['username']);
-    if ($exist['id']) {
+    if ($exist) {
         Utils::sendFinalResponseAsJson(false, 'User already exists', []);
     }
     Utils::sendFinalResponseAsJson(true, '', []);

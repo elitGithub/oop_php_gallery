@@ -45,7 +45,7 @@ class Users extends Database
      * @return $this|false
      */
     public function findUserByEmailAndPassword($username, $password) {
-        $query = "SELECT * FROM `users` WHERE username = :username AND password = :password LIMIT 1;";
+        $query = "SELECT * FROM `{$this->table}` WHERE username = :username AND password = :password LIMIT 1;";
         $this->query($query);
         $this->bind(':username', $username);
         $this->bind(':password', $password);
@@ -72,7 +72,7 @@ class Users extends Database
      * Validate existing post super global
      * Not intended to return errors
      */
-    public function validateRequestObject() : void
+    public function purifyPostObject() : void
     {
         if (!is_array($_POST) || empty($_POST)) {
             Utils::sendFinalResponseAsJson(false, 'Wrong request data', []);
@@ -93,7 +93,7 @@ class Users extends Database
     }
 
     public function findByUsername($username) {
-        $query = 'SELECT id FROM users WHERE username = :username;';
+        $query = "SELECT id FROM `{$this->table}` WHERE username = :username;";
         $this->query($query);
         $this->bind(':username', $username);
         return $this->singleResult();
@@ -103,10 +103,12 @@ class Users extends Database
     public function retrieveEntityInfo(): void
     {
         if (!$this->id) {
-            die('No Id');
+            foreach ($this->entityDataColumns as $column) {
+                $this->columnFields[$column] = '';
+            }
         }
-        $data = $this->findOne($this->id);
-        foreach ($data as $column => $value) {
+
+        foreach ($this->findOne($this->id) as $column => $value) {
             $this->columnFields[$column] = $value;
         }
     }

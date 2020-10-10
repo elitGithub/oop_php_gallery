@@ -3,8 +3,6 @@
 use Gallery\Session;
 use Gallery\Users;
 
-error_reporting(0);
-
 require_once 'functions.php';
 require_once 'config.inc.php';
 require_once 'classes/Gallery/Database.php';

@@ -36,13 +36,13 @@ if ($_POST['password'] !== $_POST['confirm_password']) {
 }
 
 $alreadyExists = $users->findByUsername($_POST['username']);
-if ($alreadyExists['id']) {
+if ($alreadyExists) {
     Utils::sendFinalResponseAsJson(false, 'User already exists', []);
 }
 unset($_POST['confirm_password']);
 unset($_POST['create_new']);
 
-$users->validateRequestObject();
+$users->purifyPostObject();
 $users->insert($_POST);
 
 Utils::sendFinalResponseAsJson(true, '', []);

@@ -501,7 +501,7 @@ async function buildUserEditForm(userData) {
                 Editing User: ${userObj.data.username}
             </div>
             <div class="img img-thumbnail center-form user-avatar-wrapper">
-                  <img class="user-avatar" src="includes/resources/uploads/${userObj.data.image}" alt="user avatar" id="user_image">
+                  <img class="img img-thumbnail user-avatar" src="includes/resources/uploads/${userObj.data.image}" alt="user avatar" id="user_image">
             </div>
             <div class="form-group">
                 <label for="firstName">First Name</label>
@@ -616,7 +616,7 @@ async function createNewUser(e) {
                 if (resJson.success) {
                     usersEditForm.style.display = 'none';
                     resultModalContent.innerHTML = `<div class="alert alert-success center-message" role="alert">
-                        User Details Updated successfully!
+                        User created successfully!
                 </div>
                 <div class="form-buttons">
                     <button id="closeMessage" class="btn btn-success">OK</button>
@@ -626,7 +626,7 @@ async function createNewUser(e) {
                 } else {
                     usersEditForm.style.display = 'none';
                     resultModalContent.innerHTML = `<div class="alert alert-danger center-message" role="alert">
-                        Failed to update user details! ${resJson.message}.
+                        Failed to create new user! ${resJson.message}.
                 </div>
                 <div class="form-buttons">
                     <button id="closeMessage" class="btn btn-danger">OK</button>
