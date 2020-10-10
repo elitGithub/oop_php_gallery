@@ -358,7 +358,8 @@ function printUsersTableWithData(data) {
     }));
 
     deleteButtons.forEach(button => button.addEventListener('click', e => {
-        console.log(e.target.id);
+        e.preventDefault();
+        deleteUser(e.target.id);
     }));
 
     document.getElementById('add_users_button').addEventListener('click', e => addNewUser(e));
@@ -653,4 +654,12 @@ async function validateNewUser(username) {
     let result = await fetch(url);
     return result.json();
 
+}
+
+async function deleteUser(userId) {
+    let confirmDelete = confirm('Warning! Deleting a user is permanent and cannot be reversed! Continue?');
+    if (confirmDelete) {
+        let url = `api/users/deleteuser.php?id=${userId}`;
+        await fetch(url).then(() => getPageContent({rerenderPage: 'users.php'}));
+    }
 }

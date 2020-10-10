@@ -1,6 +1,6 @@
 <?php
 require_once '../../includes/init.php';
-global $users;
+global $users, $session;
 
 use Gallery\Utils;
 
@@ -35,26 +35,12 @@ if ($_POST['password'] !== $_POST['confirm_password']) {
     Utils::sendFinalResponseAsJson(false, 'Passwords do not match', []);
 }
 
-foreach ($_POST as $key => $value) {
-    if ($key === 'create_new' || $key === 'confirm_password') {
-        continue;
-    }
-    if (!in_array($key, $users->entityDataColumns)) {
-        Utils::sendFinalResponseAsJson(false, "Unrecognized column {$key} in request", []);
-    }
+$alreadyExists = $users->findByUsername($_POST['username']);
+if ($alreadyExists['id']) {
+    Utils::sendFinalResponseAsJson(false, 'User already exists', []);
 }
-
-if (!empty($_FILES)) {
-    $fileUpload = Utils::uploadAndMoveFile($_FILES['image'], true);
-}
-if (isset($fileUpload) && !$fileUpload) {
-    Utils::sendFinalResponseAsJson(false, 'Error uploading file', ['errors' => $users->retrieveError()]);
-}
-
 unset($_POST['confirm_password']);
 unset($_POST['create_new']);
-$users->validateRequestObject();
-
 
 $users->validateRequestObject();
 $users->insert($_POST);

@@ -32,7 +32,7 @@ abstract class Database
      */
     public function __construct() {
         $dsn = 'mysql:host='.DB_HOST.';dbname='.DB_NAME;
-        $this->db = new PDO($dsn, DB_USER, DB_PASS, [PDO::MYSQL_ATTR_FOUND_ROWS => true]);
+        $this->db = new PDO($dsn, DB_USER, DB_PASS, [PDO::MYSQL_ATTR_FOUND_ROWS => true, PDO::ATTR_EMULATE_PREPARES => false]);
     }
 
     /**

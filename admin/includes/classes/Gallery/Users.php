@@ -92,10 +92,15 @@ class Users extends Database
         }
     }
 
-    /**
-     * @return array
-     */
-    public function retrieveEntityInfo(): array
+    public function findByUsername($username) {
+        $query = 'SELECT id FROM users WHERE username = :username;';
+        $this->query($query);
+        $this->bind(':username', $username);
+        return $this->singleResult();
+    }
+
+
+    public function retrieveEntityInfo(): void
     {
         if (!$this->id) {
             die('No Id');
