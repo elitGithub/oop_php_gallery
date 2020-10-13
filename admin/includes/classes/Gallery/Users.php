@@ -8,7 +8,6 @@ require_once 'Database.php';
 class Users extends Database
 {
 
-    public $id;
     public string $username;
     public string $email;
     public string $firstName;
@@ -16,8 +15,6 @@ class Users extends Database
     public string $password;
     public string $createdAt;
     public string $updatedAt;
-    public $entityDataColumns;
-    public array $columnFields = [];
     const EXCLUDED_FIELDS = [
         'createdAt',
         'updatedAt',
@@ -29,15 +26,6 @@ class Users extends Database
      * @var string
      */
     protected string $table = 'users';
-
-    /**
-     * User constructor.
-     */
-    public function __construct()
-    {
-        parent::__construct();
-        $this->entityDataColumns = $this->getSchemaColumns();
-    }
 
     /**
      * @param $username
@@ -59,14 +47,6 @@ class Users extends Database
         return false;
     }
 
-    /**
-     * @param $column
-     * @param $value
-     */
-    private function assignObjectVars($column, $value): void
-    {
-        $this->{$column} = $value;
-    }
 
     /**
      * Validate existing post super global
@@ -99,17 +79,4 @@ class Users extends Database
         return $this->singleResult();
     }
 
-
-    public function retrieveEntityInfo(): void
-    {
-        if (!$this->id) {
-            foreach ($this->entityDataColumns as $column) {
-                $this->columnFields[$column] = '';
-            }
-        }
-
-        foreach ($this->findOne($this->id) as $column => $value) {
-            $this->columnFields[$column] = $value;
-        }
-    }
 }

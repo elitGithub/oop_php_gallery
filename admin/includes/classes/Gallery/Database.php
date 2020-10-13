@@ -13,19 +13,26 @@ abstract class Database
      */
     protected PDO $db;
     protected $stmt;
+
     /**
      * @var string
      */
     protected string $table;
+
     /**
      * @var string
      */
     protected string $idField = 'id';
+
     /**
      * @var string
      */
     protected string $createdAtColumn = 'created_at';
     protected string $updatedAtColumn = 'updated_at';
+
+    public array $columnFields = [];
+    public $entityDataColumns;
+    public $id;
 
     /**
      * Database constructor.
@@ -33,6 +40,7 @@ abstract class Database
     public function __construct() {
         $dsn = 'mysql:host='.DB_HOST.';dbname='.DB_NAME;
         $this->db = new PDO($dsn, DB_USER, DB_PASS, [PDO::MYSQL_ATTR_FOUND_ROWS => true, PDO::ATTR_EMULATE_PREPARES => false]);
+        $this->entityDataColumns = $this->getSchemaColumns();
     }
 
     /**
@@ -205,5 +213,27 @@ abstract class Database
             $output[] = $value;
         }
         return $output;
+    }
+
+    public function retrieveEntityInfo(): void
+    {
+        if (!$this->id) {
+            foreach ($this->entityDataColumns as $column) {
+                $this->columnFields[$column] = '';
+            }
+        }
+
+        foreach ($this->findOne($this->id) as $column => $value) {
+            $this->columnFields[$column] = $value;
+        }
+    }
+
+    /**
+     * @param $column
+     * @param $value
+     */
+    protected function assignObjectVars($column, $value): void
+    {
+        $this->{$column} = $value;
     }
 }

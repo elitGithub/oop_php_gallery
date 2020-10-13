@@ -37,16 +37,20 @@ class Utils
      */
     public static function uploadAndMoveFile($uploadedFile, $userAvatar = false)
     {
+        if (!($uploadedFile['error'] === UPLOAD_ERR_OK)) {
+            $message = UPLOAD_ERRORS[$uploadedFile['error']];
+            self::sendFinalResponseAsJson(false, $message, []);
+        }
         if (self::validateProvidedFile($uploadedFile)) {
             $pathname = $userAvatar ? ROOT_PATH . '/admin/includes/resources/uploads/' : ROOT_PATH . '/resources/uploads/';
             if (!is_dir($pathname)) {
                 mkdir($pathname);
             }
 
-            $fileExtension    = pathinfo($uploadedFile['name'], PATHINFO_EXTENSION);
-            $fileName = sprintf('%s.%s', sha1_file($uploadedFile['tmp_name']), $fileExtension);
+            $fileExtension  = pathinfo($uploadedFile['name'], PATHINFO_EXTENSION);
+            $fileName       = sprintf('%s.%s', sha1_file($uploadedFile['tmp_name']), $fileExtension);
             $_POST['image'] = $fileName;
-            $targetPath = "{$pathname}" .  $fileName;
+            $targetPath     = "{$pathname}" .  $fileName;
             return move_uploaded_file($uploadedFile['tmp_name'], $targetPath);
         }
         return false;

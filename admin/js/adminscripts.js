@@ -10,6 +10,7 @@ const sideBarItems = getSideBarItems();
 const routes = [
     'index.php',
     'users.php',
+    'photos.php',
     'uploads.php',
     'comments.php',
 ];
@@ -202,6 +203,7 @@ function getSideBarItems(options = {}) {
 }
 
 function innerHtml(requestedFile) {
+
     switch (requestedFile) {
         case 'index.php':
             document.title = 'Content Management Admin';

@@ -8,6 +8,7 @@ class Session
 {
     private bool $signedIn = false;
     public $userID = null;
+    private $users;
     public $message = '';
 
     /**
@@ -15,6 +16,7 @@ class Session
      */
     public function __construct()
     {
+        $this->users = new Users();
         if (session_status() == PHP_SESSION_NONE) {
             session_start();
         }
@@ -43,7 +45,7 @@ class Session
     {
         $user = $userObj;
         if (!$user) {
-            $user = (new Users())->findUserByEmailAndPassword($username, md5($password));
+            $user = $this->users->findUserByEmailAndPassword($username, md5($password));
         }
         $this->userID = $_SESSION['user_id'] = $user->id;
         $_SESSION['token'] = md5(uniqid(mt_rand(), true));
