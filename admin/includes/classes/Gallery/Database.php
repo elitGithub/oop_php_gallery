@@ -29,6 +29,7 @@ abstract class Database
      */
     protected string $createdAtColumn = 'created_at';
     protected string $updatedAtColumn = 'updated_at';
+    protected $fillables = [];
 
     public array $columnFields = [];
     public $entityDataColumns;
@@ -145,9 +146,8 @@ abstract class Database
      * @param array $data
      */
     public function insert(array $data) {
-        $columns = array_keys($data);
-        $bindAbles = static::createBindAbles($columns);
-        $query = "INSERT INTO {$this->table} (".implode(', ', $columns).") VALUES ({$bindAbles})";
+        $bindAbles = static::createBindAbles($this->fillables);
+        $query = "INSERT INTO {$this->table} (".implode(', ', $this->fillables).") VALUES ({$bindAbles})";
         $this->query($query);
         foreach ($data as $columnName => $columnValue) {
             $this->bind(":{$columnName}", $columnValue);
@@ -224,6 +224,7 @@ abstract class Database
         }
 
         foreach ($this->findOne($this->id) as $column => $value) {
+            $this->assignObjectVars($column, $value);
             $this->columnFields[$column] = $value;
         }
     }
@@ -235,5 +236,18 @@ abstract class Database
     protected function assignObjectVars($column, $value): void
     {
         $this->{$column} = $value;
+    }
+
+    public function save() {
+        foreach ($this->columnFields as $columnField => $value) {
+            if (!in_array($columnField, array_intersect(array_keys($this->columnFields), $this->fillables))) {
+                unset($this->columnFields[$columnField]);
+            }
+        }
+        if ($this->id) {
+            $this->updateOne($this->id, $this->columnFields);
+        } else {
+            $this->insert($this->columnFields);
+        }
     }
 }

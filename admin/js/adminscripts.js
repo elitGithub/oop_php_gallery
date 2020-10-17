@@ -202,8 +202,80 @@ function getSideBarItems(options = {}) {
     return html;
 }
 
-function innerHtml(requestedFile) {
+async function getAllPhotos() {
+    return await fetch('api/photos/getphotos.php?get_all');
+}
 
+function printPhotosTableWithData(photos) {
+    console.log(photos.data);
+    let table = `<div class="row">
+    <div class="col-lg-12">
+        <h1 class="page-header">
+            Photo Management
+            <small>Manage Pictures</small>
+        </h1>
+        <button id="add_photos_button" class="btn btn-primary pull-right add-users-button">Add Photo</button>
+    </div>`;
+
+    for (const photo of photos.data) {
+        table += `<div class="col-sm-3 col-md-3">
+                    <div class="thumbnail">
+                      <img src="${photo.filename}" alt="${photo.placeholder}">
+                      <div class="caption">
+                        <h3>${photo.title}</h3>
+                        <p>${photo.description}</p>
+                        <a href="#"><i class="fa fa-pencil" id="${photo.id}"></i></a>
+                        <a href="#"><i class="fa fa-trash" id="${photo.id}"></i></a>
+                      </div>
+                    </div>
+                  </div>`;
+    }
+    pageContent.innerHTML = table;
+    document.getElementById('add_photos_button').addEventListener('click', e => addNewPhoto(e));
+    const editButtons = document.querySelectorAll('.fa-pencil');
+    const deleteButtons = document.querySelectorAll('.fa-trash');
+    editButtons.forEach(button => button.addEventListener('click', e => {
+        e.preventDefault();
+        managePhoto(e.target.id);
+    }));
+
+    deleteButtons.forEach(button => button.addEventListener('click', e => {
+        e.preventDefault();
+        deletePhoto(e.target.id);
+    }));
+}
+
+async function addNewPhoto(e) {
+    modalContent.innerHTML = `<span id="closeUserEdit" class="close">x</span>
+        <div class="errors alert-danger"></div>
+        <form class="form-align-center" id="addPhoto" enctype="multipart/form-data">
+            <div class="edit-user-header">
+               Add New Photo
+            </div>
+            <div class="form-group">
+                <label for="image"">New Image</label>
+                <input type="file" id="image" name="image">
+            </div>
+            <div class="form-group">
+                <label for="title">Photo Title</label>
+                <input type="text" class="form-control" required minlength="2" name="title" id="title">
+            </div>
+            <div class="form-group">
+                <label for="description">Photo Description</label>
+                <textarea class="form-control" required minlength="2" name="description" id="description"></textarea>
+            </div>
+            <div class="form-buttons">
+                <button type="submit" value="create_new" id="create_new" name="create_new" class="btn btn-success">Create </button>
+                <button id="cancelUserEdit" class="btn btn-danger">Cancel </button>
+            </div>
+        </form>`;
+    document.getElementById('closeUserEdit').addEventListener('click', closeUserEditForm);
+    document.getElementById('cancelUserEdit').addEventListener('click', closeUserEditForm);
+    document.getElementById('create_new').addEventListener('click', e => uploadFile(e));
+    usersEditForm.style.display = 'block';
+}
+
+function innerHtml(requestedFile) {
     switch (requestedFile) {
         case 'index.php':
             document.title = 'Content Management Admin';
@@ -223,9 +295,11 @@ function innerHtml(requestedFile) {
                     </div>`;
         case 'users.php':
             document.title = 'User Management';
-            fetchAllUsers().then(usersList => usersList.json().then(users => {
+            fetchAllUsers()
+                .then(usersList => usersList.json())
+                .then(users => {
                 return printUsersTableWithData(users.data);
-            }));
+            });
             break;
         case 'uploads.php':
             document.title = 'Uploads';
@@ -265,22 +339,12 @@ function innerHtml(requestedFile) {
                 </div>`;
         case 'photos.php':
             document.title = 'Photos';
-            return `<div class="row">
-                    <div class="col-lg-12">
-                        <h1 class="page-header">
-                            Photos Page!
-                            <small>This is sum shiet</small>
-                        </h1>
-                        <ol class="breadcrumb">
-                            <li>
-                                <i class="fa fa-dashboard"></i>  <a href="photos.php">Photos</a>
-                            </li>
-                            <li class="active">
-                                <i class="fa fa-file"></i> Blank Page
-                            </li>
-                        </ol>
-                    </div>
-                </div>`;
+            getAllPhotos()
+                .then(photoList => photoList.json())
+                .then(photos => {
+                    return printPhotosTableWithData(photos);
+                });
+            break;
         default:
             document.title = 'Not Found!';
             return `<div class="row">
@@ -423,6 +487,15 @@ async function updateUser(options = {}) {
     return (await fetch(url, request)).json();
 }
 
+async function updatePhoto(options) {
+    let url = 'api/photos/updatephotos.php';
+    let request = {
+        method: "POST",
+        body: options,
+    };
+    return (await fetch(url, request)).json();
+}
+
 async function logout() {
     await fetch('api/users/logout.php');
     window.location.href = 'login.php';
@@ -503,7 +576,7 @@ async function buildUserEditForm(userData) {
                 Editing User: ${userObj.data.username}
             </div>
             <div class="img img-thumbnail center-form user-avatar-wrapper">
-                  <img class="img img-thumbnail user-avatar" src="includes/resources/uploads/${userObj.data.image}" alt="user avatar" id="user_image">
+                  <img class="img img-thumbnail user-avatar" src="${userObj.data.image}" alt="user avatar" id="user_image">
             </div>
             <div class="form-group">
                 <label for="firstName">First Name</label>
@@ -536,8 +609,46 @@ async function buildUserEditForm(userData) {
 }
 
 // For general purpose file upload
-async function uploadFile() {
-// TODO: implement usage
+async function uploadFile(e) {
+    e.preventDefault();
+    const form = document.getElementById('addPhoto');
+    const formData = new FormData();
+    const image = document.querySelector('#image');
+
+    for (let forms of form) {
+        formData.append(forms.name, forms.value);
+    }
+    if (image.files.length > 0) {
+        formData.append('image', image.files[0]);
+    }
+    let url = 'api/photos/addphoto.php';
+    let request = {
+        method: "POST",
+        body: formData,
+    };
+    await fetch(url, request).then(response => response.json()).then(resJson => {
+        if (resJson.success) {
+            usersEditForm.style.display = 'none';
+            resultModalContent.innerHTML = `<div class="alert alert-success center-message" role="alert">
+                        Photos Uploaded Successfully
+                </div>
+                <div class="form-buttons">
+                    <button id="closeMessage" class="btn btn-success">OK</button>
+                </div>`;
+            document.getElementById('closeMessage').addEventListener('click', closeUserEditForm);
+            messageModal.style.display = 'block';
+        } else {
+            usersEditForm.style.display = 'none';
+            resultModalContent.innerHTML = `<div class="alert alert-danger center-message" role="alert">
+                        Failed to upload photo! ${resJson.message}.
+                </div>
+                <div class="form-buttons">
+                    <button id="closeMessage" class="btn btn-danger">OK</button>
+                </div>`;
+            document.getElementById('closeMessage').addEventListener('click', closeUserEditForm);
+            messageModal.style.display = 'block';
+        }
+    }).then(() => getPageContent({rerenderPage: 'photos.php'}));
 }
 
 /**
@@ -546,7 +657,6 @@ async function uploadFile() {
  * @returns {boolean}
  */
 function validateForm(form) {
-    // TODO: implement form validation
     let errors = [];
     for (let i = 0; i < form.elements.length; i++) {
         if (form[i].name === 'firstName' || form[i].name === 'lastname') {
@@ -614,29 +724,29 @@ async function createNewUser(e) {
                 method: "POST",
                 body: formData,
             };
-            await fetch(url, request).then(resJson => {
+            await fetch(url, request).then(response => response.json()).then(resJson => {
                 if (resJson.success) {
-                    usersEditForm.style.display = 'none';
-                    resultModalContent.innerHTML = `<div class="alert alert-success center-message" role="alert">
+                usersEditForm.style.display = 'none';
+                resultModalContent.innerHTML = `<div class="alert alert-success center-message" role="alert">
                         User created successfully!
                 </div>
                 <div class="form-buttons">
                     <button id="closeMessage" class="btn btn-success">OK</button>
                 </div>`;
-                    document.getElementById('closeMessage').addEventListener('click', closeUserEditForm);
-                    messageModal.style.display = 'block';
-                } else {
-                    usersEditForm.style.display = 'none';
-                    resultModalContent.innerHTML = `<div class="alert alert-danger center-message" role="alert">
+                document.getElementById('closeMessage').addEventListener('click', closeUserEditForm);
+                messageModal.style.display = 'block';
+            } else {
+                usersEditForm.style.display = 'none';
+                resultModalContent.innerHTML = `<div class="alert alert-danger center-message" role="alert">
                         Failed to create new user! ${resJson.message}.
                 </div>
                 <div class="form-buttons">
                     <button id="closeMessage" class="btn btn-danger">OK</button>
                 </div>`;
-                    document.getElementById('closeMessage').addEventListener('click', closeUserEditForm);
-                    messageModal.style.display = 'block';
-                }
-            }).then(() => getPageContent({rerenderPage: 'users.php'}));
+                document.getElementById('closeMessage').addEventListener('click', closeUserEditForm);
+                messageModal.style.display = 'block';
+            }
+        }).then(() => getPageContent({rerenderPage: 'users.php'}));
         } else {
             document.querySelector('.errors').innerHTML = 'User already exists'
             document.querySelector('.errors').style.display = 'flex';
@@ -664,4 +774,83 @@ async function deleteUser(userId) {
         let url = `api/users/deleteuser.php?id=${userId}`;
         await fetch(url).then(() => getPageContent({rerenderPage: 'users.php'}));
     }
+}
+
+async function deletePhoto(photoId) {
+    let confirmDelete = confirm('Warning! Deleting a photo is permanent and cannot be reversed! Continue?');
+    if (confirmDelete) {
+        let url = `api/photos/deletephoto.php?id=${photoId}`;
+        await fetch(url).then(() => getPageContent({rerenderPage: 'photos.php'}));
+    }
+}
+
+async function managePhoto(photoId) {
+    let url = `api/photos/getphotos.php?find_one&id=${photoId}`;
+    await buildPhotoEditForm(await fetch(url));
+    usersEditForm.style.display = 'block';
+
+    usersEditForm.addEventListener('submit', e => {
+        e.preventDefault();
+        const form = document.querySelector('#editPhoto');
+        if (!validateForm(form)) {
+            return false;
+        }
+        const formData = new FormData();
+        for (let forms of form) {
+            formData.append(forms.name, forms.value);
+        }
+        formData.append('photo_id', photoId);
+        updatePhoto(formData).then(resJson => {
+            if (resJson.success) {
+                usersEditForm.style.display = 'none';
+                resultModalContent.innerHTML = `<div class="alert alert-success center-message" role="alert">
+                        Photo Updated successfully!
+                </div>
+                <div class="form-buttons">
+                    <button id="closeMessage" class="btn btn-success">OK</button>
+                </div>`;
+                document.getElementById('closeMessage').addEventListener('click', closeUserEditForm);
+                messageModal.style.display = 'block';
+            } else {
+                usersEditForm.style.display = 'none';
+                resultModalContent.innerHTML = `<div class="alert alert-danger center-message" role="alert">
+                        Failed to update picture details! ${resJson.message}.
+                </div>
+                <div class="form-buttons">
+                    <button id="closeMessage" class="btn btn-danger">OK</button>
+                </div>`;
+                document.getElementById('closeMessage').addEventListener('click', closeUserEditForm);
+                messageModal.style.display = 'block';
+            }
+        }).then(() => getPageContent({rerenderPage: 'photos.php'}));
+    });
+}
+
+async function buildPhotoEditForm(photoData) {
+    photoData.json().then(photoObj => {
+        modalContent.innerHTML = `<span id="closePhotoEdit" class="close">x</span>
+        <div class="errors"></div>
+        <form class="form-align-center" id="editPhoto" enctype="multipart/form-data">
+            <div class="edit-user-header">
+                Editing Photo
+            </div>
+            <div class="img thumbnail center-form user-avatar-wrapper">
+                  <img class="user-avatar" src="${photoObj.data.filename}" alt="a picture" id="photo">
+            </div>
+            <div class="form-group">
+                <label for="title">Photo Title</label>
+                <input type="text" class="form-control" required minlength="2" name="title" id="title" value="${photoObj.data.title}">
+            </div>
+            <div class="form-group">
+                <label for="description">Photo Description</label>
+                <textarea class="form-control" name="description" id="description">${photoObj.data.description}</textarea>
+            </div>
+            <div class="form-buttons">
+                <button type="submit" value="update_photo" data-id="${photoObj.data.id}" id="update_photo" name="update_photo" class="btn btn-success">Submit</button>
+                <button id="cancelPhotoEdit" class="btn btn-danger">Cancel </button>
+            </div>
+        </form>`;
+        document.getElementById('closePhotoEdit').addEventListener('click', closeUserEditForm);
+        document.getElementById('cancelPhotoEdit').addEventListener('click', closeUserEditForm);
+    });
 }

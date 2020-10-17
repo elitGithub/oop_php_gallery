@@ -9,9 +9,9 @@ use finfo;
 class Utils
 {
     /**
-     * @param $location
+     * @param string $location
      */
-    public static function redirect($location): void
+    public static function redirect(string $location): void
     {
         header("Location: $location");
     }
@@ -22,7 +22,7 @@ class Utils
      * @param array $data
      * All messages from back-end processed here.
      */
-    public static function sendFinalResponseAsJson($success = true, $message = '', $data = []): void
+    public static function sendFinalResponseAsJson(bool $success = true, string $message = '', $data = []): void
     {
         if (!is_array($data)) {
             $data = [$data];
@@ -35,23 +35,23 @@ class Utils
      * @param bool $userAvatar
      * @return bool
      */
-    public static function uploadAndMoveFile($uploadedFile, $userAvatar = false)
+    public static function uploadAndMoveFile(array $uploadedFile, $userAvatar = false)
     {
         if (!($uploadedFile['error'] === UPLOAD_ERR_OK)) {
-            $message = UPLOAD_ERRORS[$uploadedFile['error']];
+            $message = Photo::UPLOAD_ERRORS[$uploadedFile['error']];
             self::sendFinalResponseAsJson(false, $message, []);
         }
         if (self::validateProvidedFile($uploadedFile)) {
-            $pathname = $userAvatar ? ROOT_PATH . '/admin/includes/resources/uploads/' : ROOT_PATH . '/resources/uploads/';
+            $pathname = $userAvatar ? USER_AVATARS_UPLOAD_DIR : SITE_IMAGES_UPLOAD_DIR;
             if (!is_dir($pathname)) {
                 mkdir($pathname);
             }
 
             $fileExtension  = pathinfo($uploadedFile['name'], PATHINFO_EXTENSION);
-            $fileName       = sprintf('%s.%s', sha1_file($uploadedFile['tmp_name']), $fileExtension);
-            $_POST['image'] = $fileName;
-            $targetPath     = "{$pathname}" .  $fileName;
-            return move_uploaded_file($uploadedFile['tmp_name'], $targetPath);
+            $fileName       = sprintf('%s.%s', sha1_file(Photo::$tmp_path), $fileExtension);
+            $_POST['image'] = $userAvatar ? USER_AVATARS_FILE_URL . $fileName : $fileName;
+            $targetPath     = "{$pathname}" . $fileName;
+            return move_uploaded_file(Photo::$tmp_path, $targetPath);
         }
         return false;
     }
@@ -62,10 +62,11 @@ class Utils
      */
     private static function validateProvidedFile($uploadedFile)
     {
+        Photo::$tmp_path  = $uploadedFile["tmp_name"];
         $fileInfo         = new finfo(FILEINFO_MIME_TYPE);
-        $fileExtension    = $fileInfo->file($uploadedFile["tmp_name"]);
+        $fileExtension    = $fileInfo->file(Photo::$tmp_path);
 
-        $fileExists       = boolval(file_exists($uploadedFile["tmp_name"]));
+        $fileExists       = boolval(file_exists(Photo::$tmp_path));
         $allowedFileType  = in_array($fileExtension, ALLOWED_MIME_TYPES);
         $allowedSize      = boolval($uploadedFile['size'] < MAX_ALLOWED_FILE_SIZE);
         $notMultipleFiles = boolval(!isset($uploadedFile['error']) || !is_array($uploadedFile['error']));

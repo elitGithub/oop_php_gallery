@@ -1,17 +1,16 @@
 <?php
 require_once '../../includes/init.php';
+
+use Gallery\Session;
 use Gallery\Utils;
-global $users, $session;
+global $users;
 
 header('Content-Type: application/json');
 
-if (!$session->isSignedIn()) {
-    session_destroy();
-    Utils::redirect('/admin/login.php');
-}
 if (isset($_GET['find_all'])) {
     $data = $users->findAll();
-    $data = array_filter($data, function ($datum) use ($session) {
+    $data = array_filter($data, function ($datum) {
+        $session = new Session();
         return $datum['id'] !== $session->getLoggedInUser();
     });
     Utils::sendFinalResponseAsJson(true, '', array_values($data));

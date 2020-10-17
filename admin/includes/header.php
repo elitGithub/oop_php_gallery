@@ -1,9 +1,11 @@
 <?php
 
+use Gallery\Session;
 use Gallery\Utils;
 
 require_once 'init.php';
-global $users, $session;
+$session = new Session();
+global $users;
  if (!$session->isSignedIn()) {
      Utils::redirect('login.php');
  }

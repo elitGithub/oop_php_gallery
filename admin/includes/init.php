@@ -1,5 +1,6 @@
 <?php
 
+use Gallery\Photo;
 use Gallery\Session;
 use Gallery\Users;
 
@@ -11,4 +12,4 @@ require_once 'classes/Gallery/Session.php';
 require_once 'classes/Gallery/Users.php';
 
 $users = new Users();
-$session = new Session();
+$photos = new Photo();

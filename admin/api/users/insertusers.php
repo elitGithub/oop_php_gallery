@@ -1,13 +1,8 @@
 <?php
 require_once '../../includes/init.php';
-global $users, $session;
+global $users;
 
 use Gallery\Utils;
-
-if (!$session->isSignedIn()) {
-    $session->logout();
-    Utils::redirect('/admin/login.php');
-}
 
 header("Access-Control-Allow-Origin: *");
 
@@ -39,11 +34,9 @@ $alreadyExists = $users->findByUsername($_POST['username']);
 if ($alreadyExists) {
     Utils::sendFinalResponseAsJson(false, 'User already exists', []);
 }
-unset($_POST['confirm_password']);
-unset($_POST['create_new']);
 
 $users->purifyPostObject();
-$users->insert($_POST);
+$users->save();
 
 Utils::sendFinalResponseAsJson(true, '', []);
 

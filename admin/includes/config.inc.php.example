@@ -7,6 +7,7 @@
 * Max upload file size (may also need to match configuration in php.ini)
 * Site root url
 * Site root directory path
+* Directory constants
 **/
 
 const DB_HOST = 'localhost';
@@ -22,7 +23,14 @@ const ALLOWED_MIME_TYPES = [
 
 const MAX_ALLOWED_FILE_SIZE = '3000000';
 
-const ROOT_URL = 'http://localhost/';
-const ROOT_PATH = '/';
+const DS = DIRECTORY_SEPARATOR;
 
+const ROOT_URL = 'http://localhost/';
+const ROOT_PATH = "/";
+const ADMIN_INCLUDES_PATH = ROOT_PATH . DS . 'admin' . DS . 'includes';
+const INCLUDES_PATH = ROOT_PATH . DS . 'includes';
+const IMAGES_FILE_URL = ROOT_URL . DS . 'resources' . DS . 'uploads/';
+const USER_AVATARS_FILE_URL = ROOT_URL . DS . 'admin' . DS . 'includes' . DS . 'resources' . DS . 'uploads/';
+const USER_AVATARS_UPLOAD_DIR = ADMIN_INCLUDES_PATH . DS . 'resources' . DS . 'uploads/';
+const SITE_IMAGES_UPLOAD_DIR = ROOT_PATH . DS .'resources' . DS .'uploads' . DS;
 error_reporting(0);

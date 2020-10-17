@@ -7,3 +7,5 @@ debug.html
 car_pictures.zip
 .DS_Store
 admin/includes/resources/uploads/
+resources/car_pictures
+resources/uploads

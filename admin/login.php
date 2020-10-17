@@ -1,7 +1,11 @@
 <?php
 require_once './includes/init.php';
-global $users, $session;
+global $users;
+
+use Gallery\Session;
 use Gallery\Utils;
+
+$session = new Session();
 
 $errMessage = '';
 $username = '';

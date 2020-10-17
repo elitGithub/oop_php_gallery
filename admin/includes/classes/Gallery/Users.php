@@ -26,6 +26,7 @@ class Users extends Database
      * @var string
      */
     protected string $table = 'users';
+    protected $fillables = ['username', 'email', 'password', 'firstName', 'lastName', 'image'];
 
     /**
      * @param $username
@@ -63,12 +64,28 @@ class Users extends Database
                 $_POST[$postKey] = filter_var($postItem, FILTER_SANITIZE_EMAIL);
             }
             if ($postKey === 'password') {
-                $_POST[$postKey] = md5($postItem);
+                if (!empty($postItem)) {
+                    $_POST[$postKey] = md5($postItem);
+                } else {
+                    $_POST[$postKey] = $this->password;
+                }
             }
+
             if (in_array($postKey, ['firstName', 'lastName'])) {
                 $_POST[$postKey] = filter_var($postItem, FILTER_SANITIZE_STRING);
                 $_POST[$postKey] = preg_replace('/\d+/u', '', $postItem);
             }
+
+            if ($postKey === 'image' && isset($_POST['update_user'])) {
+                $_POST[$postKey] = empty($postItem) ? $this->columnFields['image'] : $postItem;
+            }
+        }
+
+        foreach ($this->fillables as $fillable) {
+            if (in_array('update_user', array_keys($_POST))) {
+                $_POST['username'] = $this->username;
+            }
+            $this->columnFields[$fillable] = $_POST[$fillable];
         }
     }
 

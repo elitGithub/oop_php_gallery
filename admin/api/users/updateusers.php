@@ -1,14 +1,9 @@
 <?php
 require_once '../../includes/init.php';
-global $users, $session;
+global $users;
 
 use Gallery\Users;
 use Gallery\Utils;
-
-if (!$session->isSignedIn()) {
-    $session->logout();
-    Utils::redirect('/admin/login.php');
-}
 
 $userid = intval($_POST['user_id']);
 
@@ -19,37 +14,28 @@ if (!is_int($userid)) {
 header("Access-Control-Allow-Origin: *");
 
 if (isset($_POST['update_user'])) {
-    unset($_POST['update_user']);
-    unset($_POST['user_id']);
+    $users->id = $userid;
     foreach ($_POST as $key => $value) {
+        if ($key === 'update_user' || $key === 'user_id') {
+            continue;
+        }
         if (!in_array($key, $users->entityDataColumns)) {
             Utils::sendFinalResponseAsJson(false, "Unrecognized column {$key} in request", []);
         }
     }
 
-    $user = $users->findOne($userid);
+    $users->retrieveEntityInfo();
     if (!empty($_FILES)) {
         $fileUpload = Utils::uploadAndMoveFile($_FILES['image'], true);
     }
     if (isset($fileUpload) && !$fileUpload) {
         Utils::sendFinalResponseAsJson(false, 'Error uploading file', ['errors' => $users->retrieveError()]);
     }
+    $users->purifyPostObject();
 
-    $diff = array_diff($user, $_POST);
-    $diff = array_diff(array_keys($diff), Users::EXCLUDED_FIELDS);
-    if (sizeof($diff) > 0) {
-        if (empty($_POST['image'])) {
-            $_POST['image'] = $user['image'];
-        }
-
-        if (empty($_POST['password'])) {
-            unset($_POST['password']);
-        }
-        $users->purifyPostObject();
-        $users->updateOne($userid, $_POST);
-        if ($users->countAffectedRows() === 1) {
-            Utils::sendFinalResponseAsJson(true, '', []);
-        }
+    $users->save();
+    if ($users->countAffectedRows() === 1) {
+        Utils::sendFinalResponseAsJson(true, '', []);
     }
     Utils::sendFinalResponseAsJson(false, 'Nothing was changed', ['errors' => $users->retrieveError()]);
 }
