@@ -34,3 +34,5 @@ const USER_AVATARS_FILE_URL = ROOT_URL . DS . 'admin' . DS . 'includes' . DS . '
 const USER_AVATARS_UPLOAD_DIR = ADMIN_INCLUDES_PATH . DS . 'resources' . DS . 'uploads/';
 const SITE_IMAGES_UPLOAD_DIR = ROOT_PATH . DS .'resources' . DS .'uploads' . DS;
 error_reporting(0);
+
+$wysiwygKey = 'GET ONE HERE: https://www.tiny.cloud/';
