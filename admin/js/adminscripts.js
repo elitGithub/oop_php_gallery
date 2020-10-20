@@ -1,3 +1,5 @@
+// TODO: Refactor this file. Most of this code can be simplified
+// TODO: and moved to smaller chunks of code
 const sideBarNav = document.getElementById('sidebar_nav');
 const topNavItems = document.getElementById('top_nav_items');
 const pageContent = document.getElementById('page_content');
@@ -207,7 +209,6 @@ async function getAllPhotos() {
 }
 
 function printPhotosTableWithData(photos) {
-    console.log(photos.data);
     let table = `<div class="row">
     <div class="col-lg-12">
         <h1 class="page-header">
@@ -838,11 +839,15 @@ async function buildPhotoEditForm(photoData) {
                   <img class="user-avatar" src="${photoObj.data.filename}" alt="a picture" id="photo">
             </div>
             <div class="form-group">
-                <label for="title">Photo Title</label>
+                <label for="title">Caption</label>
                 <input type="text" class="form-control" required minlength="2" name="title" id="title" value="${photoObj.data.title}">
             </div>
             <div class="form-group">
-                <label for="description">Photo Description</label>
+                <label for="title">Alternate Text</label>
+                <input type="text" class="form-control" required minlength="2" name="alt_text" id="alt_text" value="${photoObj.data.alt_text}">
+            </div>
+            <div class="form-group">
+                <label for="description">Description</label>
                 <textarea class="form-control" name="description" id="description">${photoObj.data.description}</textarea>
             </div>
             <div class="form-buttons">
@@ -850,6 +855,7 @@ async function buildPhotoEditForm(photoData) {
                 <button id="cancelPhotoEdit" class="btn btn-danger">Cancel </button>
             </div>
         </form>`;
+        tinymce.init({selector:'#description'});
         document.getElementById('closePhotoEdit').addEventListener('click', closeUserEditForm);
         document.getElementById('cancelPhotoEdit').addEventListener('click', closeUserEditForm);
     });

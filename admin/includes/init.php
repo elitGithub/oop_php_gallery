@@ -1,7 +1,6 @@
 <?php
 
 use Gallery\Photo;
-use Gallery\Session;
 use Gallery\Users;
 
 require_once 'functions.php';

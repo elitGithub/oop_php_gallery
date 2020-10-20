@@ -9,6 +9,7 @@ class Photo extends Database
 {
     public string $title;
     public string $description;
+    public string $alt_text;
     public string $filename;
     public string $type;
     public string $size;
@@ -30,9 +31,13 @@ class Photo extends Database
      * @var string
      */
     protected string $table = 'photos';
-    protected $fillables = ['title', 'description', 'filename', 'type', 'size'];
+    protected $fillables = ['title', 'description', 'alt_text', 'filename', 'type', 'size'];
 
 
+    /**
+     * @param $uploadedFile
+     * @return bool
+     */
     public function uploadFile($uploadedFile) {
         if (empty($uploadedFile) || !$uploadedFile || !is_array($uploadedFile)) {
             $this->customErrors[] = 'There is no file to upload.';
