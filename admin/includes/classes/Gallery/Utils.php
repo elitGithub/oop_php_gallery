@@ -31,14 +31,14 @@ class Utils
     }
 
     /**
-     * @param $uploadedFile
+     * @param array $uploadedFile
      * @param bool $userAvatar
      * @return bool
      */
-    public static function uploadAndMoveFile(array $uploadedFile, $userAvatar = false)
+    public static function uploadAndMoveFile(array $uploadedFile, bool $userAvatar = false)
     {
         if (!($uploadedFile['error'] === UPLOAD_ERR_OK)) {
-            $message = Photo::UPLOAD_ERRORS[$uploadedFile['error']];
+            $message = Photos::UPLOAD_ERRORS[$uploadedFile['error']];
             self::sendFinalResponseAsJson(false, $message, []);
         }
         if (self::validateProvidedFile($uploadedFile)) {
@@ -48,10 +48,10 @@ class Utils
             }
 
             $fileExtension  = pathinfo($uploadedFile['name'], PATHINFO_EXTENSION);
-            $fileName       = sprintf('%s.%s', sha1_file(Photo::$tmp_path), $fileExtension);
+            $fileName       = sprintf('%s.%s', sha1_file(Photos::$tmp_path), $fileExtension);
             $_POST['image'] = $userAvatar ? USER_AVATARS_FILE_URL . $fileName : $fileName;
             $targetPath     = "{$pathname}" . $fileName;
-            return move_uploaded_file(Photo::$tmp_path, $targetPath);
+            return move_uploaded_file(Photos::$tmp_path, $targetPath);
         }
         return false;
     }
@@ -62,11 +62,11 @@ class Utils
      */
     private static function validateProvidedFile($uploadedFile)
     {
-        Photo::$tmp_path  = $uploadedFile["tmp_name"];
+        Photos::$tmp_path = $uploadedFile["tmp_name"];
         $fileInfo         = new finfo(FILEINFO_MIME_TYPE);
-        $fileExtension    = $fileInfo->file(Photo::$tmp_path);
+        $fileExtension    = $fileInfo->file(Photos::$tmp_path);
 
-        $fileExists       = boolval(file_exists(Photo::$tmp_path));
+        $fileExists       = boolval(file_exists(Photos::$tmp_path));
         $allowedFileType  = in_array($fileExtension, ALLOWED_MIME_TYPES);
         $allowedSize      = boolval($uploadedFile['size'] < MAX_ALLOWED_FILE_SIZE);
         $notMultipleFiles = boolval(!isset($uploadedFile['error']) || !is_array($uploadedFile['error']));

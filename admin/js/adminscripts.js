@@ -276,6 +276,16 @@ async function addNewPhoto(e) {
     usersEditForm.style.display = 'block';
 }
 
+async function fetchAllComments() {
+    return await fetch('api/comments/getcomments.php?find_all');
+}
+
+async function printCommentsTableWithData(comments) {
+    // TODO: add the html table
+    console.log(comments);
+    return true;
+}
+
 function innerHtml(requestedFile) {
     switch (requestedFile) {
         case 'index.php':
@@ -322,22 +332,12 @@ function innerHtml(requestedFile) {
                 </div>`;
         case 'comments.php':
             document.title = 'Comments';
-            return `<div class="row">
-                    <div class="col-lg-12">
-                        <h1 class="page-header">
-                            Comments Page!
-                            <small>This is sum shiet</small>
-                        </h1>
-                        <ol class="breadcrumb">
-                            <li>
-                                <i class="fa fa-dashboard"></i>  <a href="comments.php">Comments</a>
-                            </li>
-                            <li class="active">
-                                <i class="fa fa-file"></i> Blank Page
-                            </li>
-                        </ol>
-                    </div>
-                </div>`;
+            fetchAllComments()
+                .then(commentsList => commentsList.json())
+                .then(comments => {
+                    return printCommentsTableWithData(comments);
+                });
+            break;
         case 'photos.php':
             document.title = 'Photos';
             getAllPhotos()

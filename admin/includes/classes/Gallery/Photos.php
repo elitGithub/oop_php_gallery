@@ -5,7 +5,7 @@ namespace Gallery;
 
 use Gallery\Utils;
 
-class Photo extends Database
+class Photos extends Database
 {
     public string $title;
     public string $description;
@@ -45,7 +45,7 @@ class Photo extends Database
         }
 
         if (!($uploadedFile['error'] === UPLOAD_ERR_OK)) {
-            $this->customErrors[] = Photo::UPLOAD_ERRORS[$uploadedFile['error']];
+            $this->customErrors[] = Photos::UPLOAD_ERRORS[$uploadedFile['error']];
             return false;
         }
 
