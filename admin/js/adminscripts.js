@@ -281,9 +281,130 @@ async function fetchAllComments() {
 }
 
 async function printCommentsTableWithData(comments) {
-    // TODO: add the html table
-    console.log(comments);
-    return true;
+    let table = `<div class="row">
+    <div class="col-lg-12">
+        <h1 class="page-header">
+            Comments Management
+            <small>Manage Comments</small>
+        </h1>
+    <table class="table table-striped table-bordered">
+    <tr>
+    <th>Author</th>
+    <th>Image</th>
+    <th>Comment Content</th>
+    <th>Actions</th>
+    </tr>
+    `;
+    for (const comment of comments.data) {
+        table += `<tr>
+                <td>${comment.author}</td>
+                <td><img class="thumbnail" src="${comment.filename}" alt=""></td>
+                <td>${comment.body}</td>
+                <td>
+                <a href="#"><i class="fa fa-pencil" id="${comment.id}"></i></a>
+                <a href="#"><i class="fa fa-trash" id="${comment.id}"></i></a>
+                </td>
+                </tr>`;
+    }
+    table += '</table></div>';
+    pageContent.innerHTML = table;
+    const editButtons = document.querySelectorAll('.fa-pencil');
+    const deleteButtons = document.querySelectorAll('.fa-trash');
+    editButtons.forEach(button => button.addEventListener('click', e => {
+        e.preventDefault();
+        editComment(e.target.id);
+    }));
+
+    deleteButtons.forEach(button => button.addEventListener('click', e => {
+        e.preventDefault();
+        deleteComment(e.target.id);
+    }));
+}
+
+async function buildCommentEditForm(commentData) {
+    commentData.json().then(commentObj => {
+        modalContent.innerHTML = `<span id="closeUserEdit" class="close">x</span>
+        <div class="errors"></div>
+        <form class="form-align-center" id="editComment" enctype="multipart/form-data">
+            <div class="edit-user-header">
+                Editing User: ${commentObj.data.id}
+            </div>
+            <div class="form-group">
+                <label for="author">Author</label>
+                <input type="text" class="form-control" required minlength="2" name="author" id="author" value="${commentObj.data.author}">
+            </div>
+            <div class="form-group">
+                <label for="body">Comment Content</label>
+                <textarea class="form-control" name="body" id="body">${commentObj.data.body}</textarea>
+            </div>
+            <div class="form-buttons">
+                <button type="submit" value="update_user" data-id="${commentObj.data.id}" id="update_comment" name="update_comment" class="btn btn-success">Submit</button>
+                <button id="cancelUserEdit" class="btn btn-danger">Cancel</button>
+            </div>
+        </form>`;
+        document.getElementById('closeUserEdit').addEventListener('click', closeUserEditForm);
+        document.getElementById('cancelUserEdit').addEventListener('click', closeUserEditForm);
+        tinymce.init({selector:'#body'});
+    });
+}
+
+async function updateComment(options = {}) {
+    let url = 'api/comments/updatecomment.php';
+    let request = {
+        method: "POST",
+        body: options,
+    };
+    return (await fetch(url, request)).json();
+}
+
+async function editComment(id) {
+    let url = `api/comments/getcomments.php?find_one&id=${id}`;
+    await buildCommentEditForm(await fetch(url));
+    usersEditForm.style.display = 'block';
+
+    usersEditForm.addEventListener('submit', e => {
+        e.preventDefault();
+        const form = document.querySelector('#editComment');
+        if (!validateForm(form)) {
+            return false;
+        }
+        const formData = new FormData();
+        for (let forms of form) {
+            formData.append(forms.name, forms.value);
+        }
+        formData.append('id', id);
+        updateComment(formData).then(resJson => {
+            if (resJson.success) {
+                usersEditForm.style.display = 'none';
+                resultModalContent.innerHTML = `<div class="alert alert-success center-message" role="alert">
+                        Photo Updated successfully!
+                </div>
+                <div class="form-buttons">
+                    <button id="closeMessage" class="btn btn-success">OK</button>
+                </div>`;
+                document.getElementById('closeMessage').addEventListener('click', closeUserEditForm);
+                messageModal.style.display = 'block';
+            } else {
+                usersEditForm.style.display = 'none';
+                resultModalContent.innerHTML = `<div class="alert alert-danger center-message" role="alert">
+                        Failed to update picture details! ${resJson.message}.
+                </div>
+                <div class="form-buttons">
+                    <button id="closeMessage" class="btn btn-danger">OK</button>
+                </div>`;
+                document.getElementById('closeMessage').addEventListener('click', closeUserEditForm);
+                messageModal.style.display = 'block';
+            }
+        }).then(() => getPageContent({rerenderPage: 'comments.php'}));
+    });
+}
+
+async function deleteComment(id) {
+    let confirmDelete = confirm('Warning! Deleting a comment is permanent and cannot be reversed! Continue?');
+    if (confirmDelete) {
+        let url = `api/comments/deletecomment.php?id=${id}`;
+        await fetch(url).then(() => getPageContent({rerenderPage: 'comments.php'}));
+    }
 }
 
 function innerHtml(requestedFile) {
@@ -347,7 +468,7 @@ function innerHtml(requestedFile) {
                 });
             break;
         default:
-            document.title = 'Not Found!';
+            document.title = 'Not Found';
             return `<div class="row">
                     <div class="col-lg-12">
                         <h1 class="page-header">
@@ -356,10 +477,7 @@ function innerHtml(requestedFile) {
                         </h1>
                         <ol class="breadcrumb">
                             <li>
-                                <i class="fa fa-dashboard"></i>  <a href="index.php">Comments</a>
-                            </li>
-                            <li class="active">
-                                <i class="fa fa-file"></i> Blank Page
+                                <i class="fa fa-dashboard"></i>  <a href="index.php">Back Home </a>
                             </li>
                         </ol>
                     </div>
@@ -430,7 +548,6 @@ function printUsersTableWithData(data) {
     }));
 
     document.getElementById('add_users_button').addEventListener('click', e => addNewUser(e));
-
 }
 
 async function addNewUser(e) {
