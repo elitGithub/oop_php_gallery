@@ -4,6 +4,11 @@ require_once '../../includes/init.php';
 use Gallery\Utils;
 global $users;
 
+$session = new \Gallery\Session();
+if (!$session->isSignedIn()) {
+    Utils::sendFinalResponseAsJson(false, 'You are not signed in', []);
+}
+
 header('Content-Type: application/json');
 
 if (isset($_GET['id'])) {

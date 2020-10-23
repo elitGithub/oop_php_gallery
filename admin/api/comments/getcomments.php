@@ -23,4 +23,9 @@ if (isset($_GET['find_one'])) {
     Utils::sendFinalResponseAsJson(true, '', $comments->findOne($id));
 }
 
-Utils::sendFinalResponseAsJson(true, '', $comments->getAllComments());
+$data = [
+    'comments' => $comments->getAllComments(),
+    'count' => $comments->count(),
+];
+
+Utils::sendFinalResponseAsJson(true, '', $data);

@@ -250,4 +250,10 @@ abstract class Database
             $this->insert($this->columnFields);
         }
     }
+
+    public function count() {
+        $query = "SELECT COUNT(*) AS totalRecords FROM `{$this->table}`;";
+        $this->query($query);
+        return $this->singleResult();
+    }
 }

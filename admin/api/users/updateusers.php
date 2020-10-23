@@ -5,6 +5,11 @@ global $users;
 use Gallery\Users;
 use Gallery\Utils;
 
+$session = new \Gallery\Session();
+if (!$session->isSignedIn()) {
+    Utils::sendFinalResponseAsJson(false, 'You are not signed in', []);
+}
+
 $userid = intval($_POST['user_id']);
 
 if (!is_int($userid)) {

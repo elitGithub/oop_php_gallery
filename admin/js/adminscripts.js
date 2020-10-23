@@ -213,12 +213,12 @@ function printPhotosTableWithData(photos) {
     <div class="col-lg-12">
         <h1 class="page-header">
             Photo Management
-            <small>Manage Pictures</small>
+            <small>${photos.data.count.totalRecords} Photos</small>
         </h1>
         <button id="add_photos_button" class="btn btn-primary pull-right add-users-button">Add Photo</button>
     </div>`;
 
-    for (const photo of photos.data) {
+    for (const photo of photos.data.photos) {
         table += `<div class="col-sm-3 col-md-3">
                     <div class="thumbnail">
                       <img src="${photo.filename}" alt="${photo.placeholder}">
@@ -285,7 +285,7 @@ async function printCommentsTableWithData(comments) {
     <div class="col-lg-12">
         <h1 class="page-header">
             Comments Management
-            <small>Manage Comments</small>
+            <small>${comments.data.count.totalRecords} Comments</small>
         </h1>
     <table class="table table-striped table-bordered">
     <tr>
@@ -295,7 +295,7 @@ async function printCommentsTableWithData(comments) {
     <th>Actions</th>
     </tr>
     `;
-    for (const comment of comments.data) {
+    for (const comment of comments.data.comments) {
         table += `<tr>
                 <td>${comment.author}</td>
                 <td><img class="thumbnail" src="${comment.filename}" alt=""></td>
@@ -407,11 +407,12 @@ async function deleteComment(id) {
     }
 }
 
-function innerHtml(requestedFile) {
-    switch (requestedFile) {
-        case 'index.php':
-            document.title = 'Content Management Admin';
-            return `<div class="col-lg-12">
+async function dashboardMainPage() {
+    return fetch('api/general/dashboard.php');
+}
+
+async function printMainDashBoard(data) {
+    let dashboard = `<div class="col-lg-12">
                         <h1 class="page-header">
                             Index Page!
                             <small>This is sum shiet</small>
@@ -425,6 +426,116 @@ function innerHtml(requestedFile) {
                             </li>
                         </ol>
                     </div>`;
+
+    dashboard += `<div class="row">
+                    <div class="col-lg-3 col-md-6">
+                        <div class="panel panel-primary">
+                            <div class="panel-heading">
+                                <div class="row">
+                                    <div class="col-xs-3">
+                                        <i class="fa fa-users fa-5x"></i>
+                                    </div>
+                                    <div class="col-xs-9 text-right">
+                                        <div class="huge">4</div>
+                                        <div>New Views</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <a href="#">
+                                <div class="panel-footer">
+                                     <div>Page View from Gallery</div>
+                                  <span class="pull-left">View Details</span> 
+                               <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span> 
+                                    <div class="clearfix"></div>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+
+                     <div class="col-lg-3 col-md-6">
+                        <div class="panel panel-green">
+                            <div class="panel-heading">
+                                <div class="row">
+                                    <div class="col-xs-3">
+                                        <i class="fa fa-photo fa-5x"></i>
+                                    </div>
+                                    <div class="col-xs-9 text-right">
+                                        <div class="huge">7</div>
+                                        <div>Photos</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <a href="#">
+                                <div class="panel-footer">
+                                    <span class="pull-left">Total Photos in Gallery</span>
+                                    <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+                                    <div class="clearfix"></div>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+
+
+                     <div class="col-lg-3 col-md-6">
+                        <div class="panel panel-yellow">
+                            <div class="panel-heading">
+                                <div class="row">
+                                    <div class="col-xs-3">
+                                        <i class="fa fa-user fa-5x"></i>
+                                    </div>
+                                    <div class="col-xs-9 text-right">
+                                        <div class="huge">8
+
+                                        </div>
+
+                                        <div>Users</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <a href="#">
+                                <div class="panel-footer">
+                                    <span class="pull-left">Total Users</span>
+                                    <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+                                    <div class="clearfix"></div>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+
+                      <div class="col-lg-3 col-md-6">
+                        <div class="panel panel-red">
+                            <div class="panel-heading">
+                                <div class="row">
+                                    <div class="col-xs-3">
+                                        <i class="fa fa-support fa-5x"></i>
+                                    </div>
+                                    <div class="col-xs-9 text-right">
+                                        <div class="huge">8</div>
+                                        <div>Comments</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <a href="#">
+                                <div class="panel-footer">
+                                    <span class="pull-left">Total Comments</span>
+                                    <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+                                    <div class="clearfix"></div>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+          </div> <!--First Row-->`;
+    pageContent.innerHTML = dashboard;
+}
+
+function innerHtml(requestedFile) {
+    switch (requestedFile) {
+        case 'index.php':
+            document.title = 'Content Management Admin';
+            dashboardMainPage()
+                .then(dataList => dataList.json())
+                .then(data => printMainDashBoard(data));
+            break;
         case 'users.php':
             document.title = 'User Management';
             fetchAllUsers()
@@ -434,6 +545,7 @@ function innerHtml(requestedFile) {
             });
             break;
         case 'uploads.php':
+            // TODO: add this
             document.title = 'Uploads';
             return `<div class="row">
                     <div class="col-lg-12">
@@ -507,8 +619,8 @@ function printUsersTableWithData(data) {
     let table = `<div class="row">
     <div class="col-lg-12">
         <h1 class="page-header">
-            User Management
-            <small>Manage Users</small>
+            User Management 
+            <small>${data.count.totalRecords} Users</small>
         </h1>
         <button id="add_users_button" class="btn btn-primary pull-right add-users-button">Add User</button>
     <table class="table table-striped table-bordered">
@@ -519,9 +631,9 @@ function printUsersTableWithData(data) {
     <th>Last Name</th>
     <th>Email</th>
     <th>Actions</th>
-    </tr>
-    `;
-    for (const dataItem of data) {
+    </tr>`;
+
+    for (const dataItem of data['users']) {
         table += `<tr>
                 <td>${dataItem.id}</td>
                 <td>${dataItem.username}</td>

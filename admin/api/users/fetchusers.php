@@ -5,15 +5,22 @@ use Gallery\Session;
 use Gallery\Utils;
 global $users;
 
+$session = new Session();
+if (!$session->isSignedIn()) {
+    Utils::sendFinalResponseAsJson(false, 'You are not signed in', []);
+}
+
 header('Content-Type: application/json');
 
 if (isset($_GET['find_all'])) {
     $data = $users->findAll();
-    $data = array_filter($data, function ($datum) {
-        $session = new Session();
-        return $datum['id'] !== $session->getLoggedInUser();
-    });
-    Utils::sendFinalResponseAsJson(true, '', array_values($data));
+    $data = [
+        'users' => array_values(array_filter($data, function ($datum) use ($session) {
+            return $datum['id'] !== $session->getLoggedInUser();
+        })),
+        'count' => $users->count()
+    ];
+    Utils::sendFinalResponseAsJson(true, '', $data);
 }
 
 if (isset($_GET['find_one']) && isset($_GET['id'])) {

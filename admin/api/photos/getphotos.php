@@ -1,10 +1,12 @@
 <?php
 
 require_once '../../includes/init.php';
+
+use Gallery\Session;
 use Gallery\Utils;
 global $users, $photos;
 
-$session = new \Gallery\Session();
+$session = new Session();
 
 if (!$session->isSignedIn()) {
     Utils::sendFinalResponseAsJson(false, 'You are not signed in', []);
@@ -17,4 +19,9 @@ if (isset($_GET['find_one']) && isset($_GET['id'])) {
     Utils::sendFinalResponseAsJson(true, '', $photos->findOne($id));
 }
 
-Utils::sendFinalResponseAsJson(true, '', $photos->findAll());
+$data = [
+    'photos' => $photos->findAll(),
+    'count' => $photos->count()
+];
+
+Utils::sendFinalResponseAsJson(true, '', $data);
