@@ -5,7 +5,7 @@ use Gallery\Utils;
 global $users, $photos;
 
 
-$session = new \Gallery\Session();
+
 if (!$session->isSignedIn()) {
     Utils::sendFinalResponseAsJson(false, 'You are not signed in', []);
 }

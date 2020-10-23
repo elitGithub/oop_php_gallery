@@ -17,6 +17,7 @@ const routes = [
     'comments.php',
 ];
 const usersEditForm = document.getElementById('userEditForm');
+const chartData = {};
 const browserCookies = {};
 
 
@@ -411,11 +412,15 @@ async function dashboardMainPage() {
     return fetch('api/general/dashboard.php');
 }
 
-async function printMainDashBoard(data) {
-    let dashboard = `<div class="col-lg-12">
+async function printMainDashBoard(dashboardInfo) {
+    chartData.totalPhotos = dashboardInfo.data.photos.totalRecords || 0;
+    chartData.totalUsers = dashboardInfo.data.photos.totalRecords || 0;
+    chartData.totalComments = dashboardInfo.data.photos.totalRecords || 0;
+    chartData.totalViews = dashboardInfo.data.views || 0 ;
+    pageContent.innerHTML = `<div class="col-lg-12">
                         <h1 class="page-header">
                             Index Page!
-                            <small>This is sum shiet</small>
+                            <small>Dashboard</small>
                         </h1>
                         <ol class="breadcrumb">
                             <li>
@@ -425,9 +430,8 @@ async function printMainDashBoard(data) {
                                 <i class="fa fa-file"></i> Blank Page
                             </li>
                         </ol>
-                    </div>`;
-
-    dashboard += `<div class="row">
+                    </div>
+                    <div class="row">
                     <div class="col-lg-3 col-md-6">
                         <div class="panel panel-primary">
                             <div class="panel-heading">
@@ -436,14 +440,13 @@ async function printMainDashBoard(data) {
                                         <i class="fa fa-users fa-5x"></i>
                                     </div>
                                     <div class="col-xs-9 text-right">
-                                        <div class="huge">4</div>
+                                        <div class="huge">${chartData.totalViews}</div>
                                         <div>New Views</div>
                                     </div>
                                 </div>
                             </div>
                             <a href="#">
                                 <div class="panel-footer">
-                                     <div>Page View from Gallery</div>
                                   <span class="pull-left">View Details</span> 
                                <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span> 
                                     <div class="clearfix"></div>
@@ -451,7 +454,6 @@ async function printMainDashBoard(data) {
                             </a>
                         </div>
                     </div>
-
                      <div class="col-lg-3 col-md-6">
                         <div class="panel panel-green">
                             <div class="panel-heading">
@@ -460,7 +462,7 @@ async function printMainDashBoard(data) {
                                         <i class="fa fa-photo fa-5x"></i>
                                     </div>
                                     <div class="col-xs-9 text-right">
-                                        <div class="huge">7</div>
+                                        <div class="huge">${chartData.totalPhotos}</div>
                                         <div>Photos</div>
                                     </div>
                                 </div>
@@ -474,8 +476,6 @@ async function printMainDashBoard(data) {
                             </a>
                         </div>
                     </div>
-
-
                      <div class="col-lg-3 col-md-6">
                         <div class="panel panel-yellow">
                             <div class="panel-heading">
@@ -484,10 +484,8 @@ async function printMainDashBoard(data) {
                                         <i class="fa fa-user fa-5x"></i>
                                     </div>
                                     <div class="col-xs-9 text-right">
-                                        <div class="huge">8
-
+                                        <div class="huge">${chartData.totalUsers}
                                         </div>
-
                                         <div>Users</div>
                                     </div>
                                 </div>
@@ -510,7 +508,7 @@ async function printMainDashBoard(data) {
                                         <i class="fa fa-support fa-5x"></i>
                                     </div>
                                     <div class="col-xs-9 text-right">
-                                        <div class="huge">8</div>
+                                        <div class="huge">${chartData.totalComments}</div>
                                         <div>Comments</div>
                                     </div>
                                 </div>
@@ -524,8 +522,12 @@ async function printMainDashBoard(data) {
                             </a>
                         </div>
                     </div>
-          </div> <!--First Row-->`;
-    pageContent.innerHTML = dashboard;
+          </div> <!--First Row-->
+          <div class="google-pie-chart">
+          <div class="the-pie" id="piechart"></div>
+</div>`;
+    google.charts.load('current', {'packages':['corechart']});
+    google.charts.setOnLoadCallback(drawChart);
 }
 
 function innerHtml(requestedFile) {
@@ -551,7 +553,7 @@ function innerHtml(requestedFile) {
                     <div class="col-lg-12">
                         <h1 class="page-header">
                             Uploads Page!
-                            <small>This is sum shiet</small>
+                            <small>Upload here</small>
                         </h1>
                         <ol class="breadcrumb">
                             <li>
@@ -1088,4 +1090,25 @@ async function buildPhotoEditForm(photoData) {
         document.getElementById('closePhotoEdit').addEventListener('click', closeUserEditForm);
         document.getElementById('cancelPhotoEdit').addEventListener('click', closeUserEditForm);
     });
+}
+
+function drawChart() {
+    const data = google.visualization.arrayToDataTable([
+        ['Statistic', 'Numbers'],
+        ['Views',    chartData.totalViews],
+        ['Users',    chartData.totalUsers],
+        ['Photos',   chartData.totalPhotos],
+        ['Comments', chartData.totalComments],
+    ]);
+
+    const options = {
+        title: 'Statistics',
+        legend : 'none',
+        pieSliceText: 'label',
+        backgroundColor: 'transparent'
+    };
+
+    const chart = new google.visualization.PieChart(document.getElementById('piechart'));
+
+    chart.draw(data, options);
 }

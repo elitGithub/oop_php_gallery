@@ -2,11 +2,9 @@
 
 require_once '../../includes/init.php';
 
-use Gallery\Session;
 use Gallery\Utils;
 global $users, $photos;
 
-$session = new Session();
 
 if (!$session->isSignedIn()) {
     Utils::sendFinalResponseAsJson(false, 'You are not signed in', []);

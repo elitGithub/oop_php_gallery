@@ -1,11 +1,9 @@
 <?php
 
-use Gallery\Session;
 use Gallery\Utils;
 
 require_once 'init.php';
-$session = new Session();
-global $users;
+
  if (!$session->isSignedIn()) {
      Utils::redirect('login.php');
  }
@@ -36,6 +34,7 @@ ob_start();
         <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
     <![endif]-->
 
+    <script defer type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     <script defer src="js/adminscripts.js"></script>
 </head>
 <body>

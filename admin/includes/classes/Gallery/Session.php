@@ -10,6 +10,7 @@ class Session
     public $userID = null;
     private $users;
     public $message = '';
+    public $count = 0;
 
     /**
      * Session constructor.
@@ -22,6 +23,7 @@ class Session
         }
         $this->checkLogin();
         $this->checkMessage();
+        $this->visitorCount();
     }
 
     private function checkLogin() {
@@ -94,5 +96,12 @@ class Session
         } else {
             $this->message = '';
         }
+    }
+
+    public function visitorCount() {
+        if (isset($_SESSION['count'])) {
+            return $this->count = $_SESSION['count']++;
+        }
+        return $_SESSION['count'] = 1;
     }
 }

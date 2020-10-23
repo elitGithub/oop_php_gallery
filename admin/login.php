@@ -5,8 +5,6 @@ global $users;
 use Gallery\Session;
 use Gallery\Utils;
 
-$session = new Session();
-
 $errMessage = '';
 $username = '';
 $password = '';
