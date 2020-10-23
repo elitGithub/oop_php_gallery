@@ -74,4 +74,9 @@ class Utils
 
         return ($fileExists && $allowedFileType && $allowedSize && $notMultipleFiles && $noErrors);
     }
+
+    public static function editorKey() {
+        global $textEditorKey;
+        echo $textEditorKey;
+    }
 }

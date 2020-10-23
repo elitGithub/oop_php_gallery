@@ -3,6 +3,8 @@
 
 namespace Gallery;
 
+// TODO: fix the session class, maybe refactor
+// TODO: Need workaround because everything runs on the same session
 
 class Session
 {

@@ -217,15 +217,15 @@ abstract class Database
 
     public function retrieveEntityInfo(): void
     {
-        if (!$this->id) {
-            foreach ($this->entityDataColumns as $column) {
-                $this->columnFields[$column] = '';
+        if ($this->id) {
+            foreach ($this->findOne($this->id) as $column => $value) {
+                $this->assignObjectVars($column, $value);
+                $this->columnFields[$column] = $value;
             }
-        }
-
-        foreach ($this->findOne($this->id) as $column => $value) {
-            $this->assignObjectVars($column, $value);
-            $this->columnFields[$column] = $value;
+        } else {
+            foreach ($this -> entityDataColumns as $column) {
+                $this -> columnFields[$column] = '';
+            }
         }
     }
 

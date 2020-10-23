@@ -10,6 +10,7 @@ class Photos extends Database
     public string $title;
     public string $description;
     public string $alt_text;
+    public string $caption;
     public string $filename;
     public string $type;
     public string $size;
@@ -31,7 +32,7 @@ class Photos extends Database
      * @var string
      */
     protected string $table = 'photos';
-    protected $fillables = ['title', 'description', 'alt_text', 'filename', 'type', 'size'];
+    protected $fillables = ['title', 'description', 'alt_text', 'caption', 'filename', 'type', 'size'];
 
 
     /**

@@ -1,5 +1,6 @@
 // TODO: Refactor this file. Most of this code can be simplified
 // TODO: and moved to smaller chunks of code
+// TODO: this could probably use some cleaning
 const sideBarNav = document.getElementById('sidebar_nav');
 const topNavItems = document.getElementById('top_nav_items');
 const pageContent = document.getElementById('page_content');
@@ -209,7 +210,7 @@ async function getAllPhotos() {
     return await fetch('api/photos/getphotos.php?get_all');
 }
 
-function printPhotosTableWithData(photos) {
+async function printPhotosTableWithData(photos) {
     let table = `<div class="row">
     <div class="col-lg-12">
         <h1 class="page-header">
@@ -233,7 +234,10 @@ function printPhotosTableWithData(photos) {
                   </div>`;
     }
     pageContent.innerHTML = table;
-    document.getElementById('add_photos_button').addEventListener('click', e => addNewPhoto(e));
+    document.getElementById('add_photos_button').addEventListener('click', async e => {
+        await addNewPhoto(e);
+        usersEditForm.style.display = 'block';
+    });
     const editButtons = document.querySelectorAll('.fa-pencil');
     const deleteButtons = document.querySelectorAll('.fa-trash');
     editButtons.forEach(button => button.addEventListener('click', e => {
@@ -263,8 +267,16 @@ async function addNewPhoto(e) {
                 <input type="text" class="form-control" required minlength="2" name="title" id="title">
             </div>
             <div class="form-group">
+                <label for="alt_text">Alt Text</label>
+                <input type="text" class="form-control" required minlength="2" name="alt_text" id="alt_text">
+            </div>
+            <div class="form-group">
+                <label for="caption">Caption</label>
+                <input type="text" class="form-control" required minlength="2" name="caption" id="caption">
+            </div>
+            <div class="form-group">
                 <label for="description">Photo Description</label>
-                <textarea class="form-control" required minlength="2" name="description" id="description"></textarea>
+                <textarea class="form-control" required minlength="2" name="description" id="add_description"></textarea>
             </div>
             <div class="form-buttons">
                 <button type="submit" value="create_new" id="create_new" name="create_new" class="btn btn-success">Create </button>
@@ -274,7 +286,14 @@ async function addNewPhoto(e) {
     document.getElementById('closeUserEdit').addEventListener('click', closeUserEditForm);
     document.getElementById('cancelUserEdit').addEventListener('click', closeUserEditForm);
     document.getElementById('create_new').addEventListener('click', e => uploadFile(e));
-    usersEditForm.style.display = 'block';
+    tinymce.init({
+        selector:'#add_description',
+        setup: function (editor) {
+            editor.on('change', function () {
+                tinymce.triggerSave();
+            });
+        }
+    });
 }
 
 async function fetchAllComments() {
@@ -335,8 +354,8 @@ async function buildCommentEditForm(commentData) {
                 <input type="text" class="form-control" required minlength="2" name="author" id="author" value="${commentObj.data.author}">
             </div>
             <div class="form-group">
-                <label for="body">Comment Content</label>
-                <textarea class="form-control" name="body" id="body">${commentObj.data.body}</textarea>
+                <label for="comment_content">Comment Content</label>
+                <textarea class="form-control" name="comment_content" id="comment_content">${commentObj.data.comment_content}</textarea>
             </div>
             <div class="form-buttons">
                 <button type="submit" value="update_user" data-id="${commentObj.data.id}" id="update_comment" name="update_comment" class="btn btn-success">Submit</button>
@@ -345,7 +364,14 @@ async function buildCommentEditForm(commentData) {
         </form>`;
         document.getElementById('closeUserEdit').addEventListener('click', closeUserEditForm);
         document.getElementById('cancelUserEdit').addEventListener('click', closeUserEditForm);
-        tinymce.init({selector:'#body'});
+        tinymce.init({
+            selector:'#comment_content',
+            setup: function (editor) {
+                editor.on('change', function () {
+                    tinymce.triggerSave();
+                });
+            }
+        });
     });
 }
 
@@ -844,12 +870,9 @@ async function buildUserEditForm(userData) {
 async function uploadFile(e) {
     e.preventDefault();
     const form = document.getElementById('addPhoto');
-    const formData = new FormData();
+    const formData = new FormData(form);
     const image = document.querySelector('#image');
 
-    for (let forms of form) {
-        formData.append(forms.name, forms.value);
-    }
     if (image.files.length > 0) {
         formData.append('image', image.files[0]);
     }
@@ -1086,7 +1109,14 @@ async function buildPhotoEditForm(photoData) {
                 <button id="cancelPhotoEdit" class="btn btn-danger">Cancel </button>
             </div>
         </form>`;
-        tinymce.init({selector:'#description'});
+        tinymce.init({
+            selector:'#description',
+            setup: function (editor) {
+                editor.on('change', function () {
+                    tinymce.triggerSave();
+                });
+            }
+        });
         document.getElementById('closePhotoEdit').addEventListener('click', closeUserEditForm);
         document.getElementById('cancelPhotoEdit').addEventListener('click', closeUserEditForm);
     });

@@ -40,6 +40,10 @@ if ($alreadyExists) {
     Utils::sendFinalResponseAsJson(false, 'User already exists', []);
 }
 
+if (isset($_POST['create_new']) && empty($_POST['image'])) {
+    $_POST['image'] = 'http://placehold.it/150x150';
+}
+
 $users->purifyPostObject();
 $users->save();
 
