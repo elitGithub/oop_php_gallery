@@ -10,6 +10,9 @@ require_once 'classes/Gallery/Database.php';
 require_once 'classes/Gallery/Utils.php';
 require_once 'classes/Gallery/Session.php';
 require_once 'classes/Gallery/Users.php';
+require_once 'classes/Gallery/Photos.php';
+require_once 'classes/Gallery/Comments.php';
+require_once 'classes/Gallery/Paginate.php';
 
 $users = new Users();
 $photos = new Photos();

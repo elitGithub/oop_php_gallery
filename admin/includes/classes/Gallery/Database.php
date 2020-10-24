@@ -102,8 +102,8 @@ abstract class Database
     /**
      * @return mixed
      */
-    public function findAll() {
-        $query = "SELECT * FROM `{$this->table}`;";
+    public function findAll($limit = 1000, $offset = 0) {
+        $query = "SELECT * FROM `{$this->table}` LIMIT {$offset}, {$limit};";
         $this->query($query);
         return $this->resultSet();
     }

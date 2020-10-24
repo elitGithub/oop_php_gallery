@@ -36,3 +36,4 @@ const SITE_IMAGES_UPLOAD_DIR = ROOT_PATH . DS .'resources' . DS .'uploads' . DS;
 error_reporting(0);
 
 $textEditorKey = 'GET ONE HERE: https://www.tiny.cloud/';
+$items_per_page = 4;
