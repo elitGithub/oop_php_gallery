@@ -218,21 +218,20 @@ async function printPhotosTableWithData(photos) {
             <small>${photos.data.count.totalRecords} Photos</small>
         </h1>
         <button id="add_photos_button" class="btn btn-primary pull-right add-users-button">Add Photo</button>
-    </div>`;
+    </div></div><div class="row">`;
 
     for (const photo of photos.data.photos) {
-        table += `<div class="col-sm-3 col-md-3">
-                    <div class="thumbnail">
-                      <img src="${photo.filename}" alt="${photo.placeholder}">
-                      <div class="caption">
-                        <h3>${photo.title}</h3>
-                        <p>${photo.description}</p>
-                        <a href="#"><i class="fa fa-pencil" id="${photo.id}"></i></a>
-                        <a href="#"><i class="fa fa-trash" id="${photo.id}"></i></a>
-                      </div>
-                    </div>
-                  </div>`;
+        table += `<div class="card col-sm-3 col-md-3">
+  <img class="card-img-top" src="${photo.filename}" alt="${photo.placeholder}">
+  <div class="card-body">
+    <h5 class="card-title">${photo.title}</h5>
+    <p class="card-text">${photo.description}</p>
+    <a href="#"><i class="fa fa-pencil" id="${photo.id}"></i></a>
+   <a href="#"><i class="fa fa-trash" id="${photo.id}"></i></a>
+  </div>
+</div>`;
     }
+table += `</div>`;
     pageContent.innerHTML = table;
     document.getElementById('add_photos_button').addEventListener('click', async e => {
         await addNewPhoto(e);

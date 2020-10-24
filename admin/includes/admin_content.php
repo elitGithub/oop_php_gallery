@@ -1,7 +1,7 @@
 <?php include("includes/header.php");?>
  <!-- Navigation -->
 
-    <div id="page-wrapper">
+    <div class="container" id="page-wrapper">
         <div id="page_content" class="container-fluid">
 
             <!-- Page Heading -->
