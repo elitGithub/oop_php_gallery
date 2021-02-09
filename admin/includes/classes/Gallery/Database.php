@@ -6,8 +6,7 @@ namespace Gallery;
 use PDO;
 
 
-abstract class Database
-{
+abstract class Database {
     /**
      * @var PDO
      */
@@ -39,7 +38,7 @@ abstract class Database
      * Database constructor.
      */
     public function __construct() {
-        $dsn = 'mysql:host='.DB_HOST.';dbname='.DB_NAME;
+        $dsn = 'mysql:host=' . DB_HOST . ';dbname=' . DB_NAME;
         $this->db = new PDO($dsn, DB_USER, DB_PASS, [PDO::MYSQL_ATTR_FOUND_ROWS => true, PDO::ATTR_EMULATE_PREPARES => false]);
         $this->entityDataColumns = $this->getSchemaColumns();
     }
@@ -88,6 +87,7 @@ abstract class Database
      */
     public function resultSet() {
         $this->execute();
+
         return $this->stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
@@ -105,11 +105,13 @@ abstract class Database
     public function findAll($limit = 1000, $offset = 0) {
         $query = "SELECT * FROM `{$this->table}` LIMIT {$offset}, {$limit};";
         $this->query($query);
+
         return $this->resultSet();
     }
 
     public function singleResult() {
         $this->execute();
+
         return $this->stmt->fetch(PDO::FETCH_ASSOC);
     }
 
@@ -121,6 +123,7 @@ abstract class Database
         $query = "SELECT * FROM `{$this->table}` WHERE `{$this->idField}` = :id;";
         $this->query($query);
         $this->bind(':id', $id);
+
         return $this->singleResult();
     }
 
@@ -147,7 +150,7 @@ abstract class Database
      */
     public function insert(array $data) {
         $bindAbles = static::createBindAbles($this->fillables);
-        $query = "INSERT INTO {$this->table} (".implode(', ', $this->fillables).") VALUES ({$bindAbles})";
+        $query = "INSERT INTO {$this->table} (" . implode(', ', $this->fillables) . ") VALUES ({$bindAbles})";
         $this->query($query);
         foreach ($data as $columnName => $columnValue) {
             $this->bind(":{$columnName}", $columnValue);
@@ -159,15 +162,15 @@ abstract class Database
     /**
      * @return mixed
      */
-    public function getSchemaColumns()
-    {
+    public function getSchemaColumns() {
         $query = "SELECT * FROM `{$this->table}` LIMIT 0";
         $this->query($query);
         $this->execute();
-        for($i = 0; $i < $this->stmt->columnCount(); $i++) {
+        for ($i = 0; $i < $this->stmt->columnCount(); $i++) {
             $colData = $this->stmt->getColumnMeta($i);
             $columns[] = $colData['name'];
         }
+
         return $columns ?? [];
     }
 
@@ -175,12 +178,12 @@ abstract class Database
      * @param array $columnNames
      * @return string
      */
-    public static function createBindAbles(array $columnNames)
-    {
+    public static function createBindAbles(array $columnNames) {
         $bindableAttr = [];
         foreach ($columnNames as $name) {
             $bindableAttr[] = ":{$name}";
         }
+
         return implode(', ', $bindableAttr);
     }
 
@@ -212,19 +215,19 @@ abstract class Database
             }
             $output[] = $value;
         }
+
         return $output;
     }
 
-    public function retrieveEntityInfo(): void
-    {
+    public function retrieveEntityInfo(): void {
         if ($this->id) {
             foreach ($this->findOne($this->id) as $column => $value) {
                 $this->assignObjectVars($column, $value);
                 $this->columnFields[$column] = $value;
             }
         } else {
-            foreach ($this -> entityDataColumns as $column) {
-                $this -> columnFields[$column] = '';
+            foreach ($this->entityDataColumns as $column) {
+                $this->columnFields[$column] = '';
             }
         }
     }
@@ -233,8 +236,7 @@ abstract class Database
      * @param $column
      * @param $value
      */
-    protected function assignObjectVars($column, $value): void
-    {
+    protected function assignObjectVars($column, $value): void {
         $this->{$column} = $value;
     }
 
@@ -254,6 +256,7 @@ abstract class Database
     public function count() {
         $query = "SELECT COUNT(*) AS totalRecords FROM `{$this->table}`;";
         $this->query($query);
+
         return $this->singleResult();
     }
 }
