@@ -18,7 +18,7 @@ class Comments extends Database
         return $this->resultSet();
     }
 
-    public function getCommentsForPhoto() {
+    public function getCommentsForPhoto(): array {
         if (!$this->photo_id) {
             return [];
         }

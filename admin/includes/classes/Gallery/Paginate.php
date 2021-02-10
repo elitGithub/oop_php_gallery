@@ -6,9 +6,9 @@ namespace Gallery;
 
 class Paginate
 {
-    public $currentPage;
-    public $itemsPerPage;
-    public $itemsTotalCount;
+    public int $currentPage;
+    public int $itemsPerPage;
+    public int $itemsTotalCount;
 
     /**
      * Paginate constructor.
@@ -26,14 +26,14 @@ class Paginate
     /**
      * @return int
      */
-    public function next() {
+    public function next(): int {
         return $this->currentPage + 1;
     }
 
     /**
      * @return int
      */
-    public function previous() {
+    public function previous(): int {
         return $this->currentPage - 1;
     }
 
@@ -47,14 +47,14 @@ class Paginate
     /**
      * @return bool
      */
-     public function hasPreviousPage() {
+     public function hasPreviousPage(): bool {
         return (bool) ($this->previous() >= 1);
      }
 
     /**
      * @return bool
      */
-    public function hasNextPage() {
+    public function hasNextPage(): bool {
         return (bool) ($this->next() <= $this->totalPages());
     }
 

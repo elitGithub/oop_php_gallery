@@ -35,8 +35,7 @@ class Utils
      * @param bool $userAvatar
      * @return bool
      */
-    public static function uploadAndMoveFile(array $uploadedFile, bool $userAvatar = false)
-    {
+    public static function uploadAndMoveFile(array $uploadedFile, bool $userAvatar = false): bool {
         if (!($uploadedFile['error'] === UPLOAD_ERR_OK)) {
             $message = Photos::UPLOAD_ERRORS[$uploadedFile['error']];
             self::sendFinalResponseAsJson(false, $message, []);
@@ -60,8 +59,7 @@ class Utils
      * @param $uploadedFile
      * @return bool
      */
-    private static function validateProvidedFile($uploadedFile)
-    {
+    private static function validateProvidedFile($uploadedFile): bool {
         Photos::$tmp_path = $uploadedFile["tmp_name"];
         $fileInfo         = new finfo(FILEINFO_MIME_TYPE);
         $fileExtension    = $fileInfo->file(Photos::$tmp_path);

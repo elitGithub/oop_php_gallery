@@ -6,19 +6,17 @@ namespace Gallery;
 // TODO: fix the session class, maybe refactor
 // TODO: Need workaround because everything runs on the same session
 
-class Session
-{
+class Session {
     private bool $signedIn = false;
     public $userID = null;
-    private $users;
-    public $message = '';
-    public $count = 0;
+    private Users $users;
+    public string $message = '';
+    public int $count = 0;
 
     /**
      * Session constructor.
      */
-    public function __construct()
-    {
+    public function __construct() {
         $this->users = new Users();
         if (session_status() == PHP_SESSION_NONE) {
             session_start();
@@ -36,31 +34,30 @@ class Session
     /**
      * @return bool
      */
-    public function isSignedIn(): bool
-    {
+    public function isSignedIn(): bool {
         return $this->signedIn;
     }
 
     /**
      * @param $username
      * @param $password
+     * @param null $userObj
      */
-    public function login($username, $password, $userObj = null)
-    {
+    public function login($username, $password, $userObj = null) {
         $user = $userObj;
         if (!$user) {
             $user = $this->users->findUserByEmailAndPassword($username, md5($password));
         }
         $this->userID = $_SESSION['user_id'] = $user->id;
         $_SESSION['token'] = md5(uniqid(mt_rand(), true));
-        $cookieData = json_encode(['user_id' => $this->userID, 'time' => time(), 'token' => $_SESSION['token']]);
+        $cookieData = @json_encode(['user_id' => $this->userID, 'time' => time(), 'token' => $_SESSION['token']]);
         setcookie('login', $cookieData, time() + 3600);
     }
 
     /**
      * @return null|int
      */
-    public function getLoggedInUser() {
+    public function getLoggedInUser(): ?int {
         return $this->userID;
     }
 
@@ -80,12 +77,12 @@ class Session
      * @param string $message
      * @return string
      */
-    public function message($message = '') {
-        if (!empty($message)) {
-            $_SESSION['message'] = $message;
-        } else {
+    public function message($message = ''): string {
+        if (empty($message)) {
             return $this->message;
         }
+        $_SESSION['message'] = $message;
+        return $message;
     }
 
     /**
@@ -100,10 +97,11 @@ class Session
         }
     }
 
-    public function visitorCount() {
+    public function visitorCount(): int {
         if (isset($_SESSION['count'])) {
             return $this->count = $_SESSION['count']++;
         }
+
         return $_SESSION['count'] = 1;
     }
 }

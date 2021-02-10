@@ -3,8 +3,6 @@
 
 namespace Gallery;
 
-use Gallery\Utils;
-
 class Photos extends Database
 {
     public string $title;
@@ -39,7 +37,7 @@ class Photos extends Database
      * @param $uploadedFile
      * @return bool
      */
-    public function uploadFile($uploadedFile) {
+    public function uploadFile($uploadedFile): ?bool {
         if (empty($uploadedFile) || !$uploadedFile || !is_array($uploadedFile)) {
             $this->customErrors[] = 'There is no file to upload.';
             return false;
@@ -59,7 +57,7 @@ class Photos extends Database
 
         if (!$success) {
             $this->customErrors[] = 'Unable to write file to disk.';
-            return $success;
+            return false;
         }
 
         foreach ($_POST as $postKey => $postItem) {
