@@ -27,6 +27,7 @@ class Utils
         if (!is_array($data)) {
             $data = [$data];
         }
+        session_write_close();
         die(@json_encode(['success' => $success, 'message' => $message, 'data' => $data]));
     }
 

@@ -3,9 +3,6 @@
 
 namespace Gallery;
 
-// TODO: fix the session class, maybe refactor
-// TODO: Need workaround because everything runs on the same session
-
 class Session {
     private bool $signedIn = false;
     public $userID = null;
@@ -97,6 +94,9 @@ class Session {
         }
     }
 
+    /**
+     * @return int
+     */
     public function visitorCount(): int {
         if (isset($_SESSION['count'])) {
             return $this->count = $_SESSION['count']++;

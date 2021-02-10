@@ -34,7 +34,7 @@ class Users extends Database
      * @return $this|false
      */
     public function findUserByEmailAndPassword($username, $password) {
-        $query = "SELECT * FROM `{$this->table}` WHERE username = :username AND password = :password LIMIT 1;";
+        $query = "SELECT * FROM `users` WHERE username = :username AND password = :password LIMIT 1;";
         $this->query($query);
         $this->bind(':username', $username);
         $this->bind(':password', $password);
