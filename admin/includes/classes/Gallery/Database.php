@@ -28,7 +28,7 @@ abstract class Database {
      */
     protected string $createdAtColumn = 'created_at';
     protected string $updatedAtColumn = 'updated_at';
-    protected $fillables = [];
+    protected array $fillables = [];
 
     public array $columnFields = [];
     public $entityDataColumns;
@@ -94,12 +94,14 @@ abstract class Database {
     /**
      * @return string
      */
-    public function lastInsertId() {
+    public function lastInsertId(): string {
         return $this->db->lastInsertId();
     }
 
 
     /**
+     * @param int $limit
+     * @param int $offset
      * @return mixed
      */
     public function findAll($limit = 1000, $offset = 0) {
@@ -162,7 +164,7 @@ abstract class Database {
     /**
      * @return mixed
      */
-    public function getSchemaColumns() {
+    public function getSchemaColumns(): array {
         $query = "SELECT * FROM `{$this->table}` LIMIT 0";
         $this->query($query);
         $this->execute();
@@ -178,7 +180,7 @@ abstract class Database {
      * @param array $columnNames
      * @return string
      */
-    public static function createBindAbles(array $columnNames) {
+    public static function createBindAbles(array $columnNames): string {
         $bindableAttr = [];
         foreach ($columnNames as $name) {
             $bindableAttr[] = ":{$name}";
@@ -205,7 +207,7 @@ abstract class Database {
      * @param array $input
      * @return array
      */
-    public function flattenArray(array $input) {
+    public function flattenArray(array $input): array {
         if (!is_array($input) || empty($input)) {
             return $input;
         }
@@ -216,7 +218,7 @@ abstract class Database {
             $output[] = $value;
         }
 
-        return $output;
+        return $output ?? [];
     }
 
     public function retrieveEntityInfo(): void {

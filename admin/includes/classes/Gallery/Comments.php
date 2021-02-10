@@ -7,7 +7,7 @@ namespace Gallery;
 class Comments extends Database
 {
     protected string $table = 'comments';
-    protected $fillables = ['photo_id', 'author', 'comment_content'];
+    protected array $fillables = ['photo_id', 'author', 'comment_content'];
     public int $photo_id;
     public string $author;
     public string $comment_content;

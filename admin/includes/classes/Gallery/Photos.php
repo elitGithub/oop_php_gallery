@@ -32,7 +32,7 @@ class Photos extends Database
      * @var string
      */
     protected string $table = 'photos';
-    protected $fillables = ['title', 'description', 'alt_text', 'caption', 'filename', 'type', 'size'];
+    protected array $fillables = ['title', 'description', 'alt_text', 'caption', 'filename', 'type', 'size'];
 
 
     /**

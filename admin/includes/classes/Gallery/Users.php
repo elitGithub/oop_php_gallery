@@ -26,7 +26,7 @@ class Users extends Database
      * @var string
      */
     protected string $table = 'users';
-    protected $fillables = ['username', 'email', 'password', 'firstName', 'lastName', 'image'];
+    protected array $fillables = ['username', 'email', 'password', 'firstName', 'lastName', 'image'];
 
     /**
      * @param $username
